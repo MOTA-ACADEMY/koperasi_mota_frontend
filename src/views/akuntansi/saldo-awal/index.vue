@@ -110,13 +110,22 @@
                 <th v-for="m in matrixData.months" :key="m.key" class="text-right p-3 font-medium min-w-[130px]">
                   <div class="flex flex-col items-end gap-1">
                     <span>{{ m.label }}</span>
-                    <Button
-                      v-if="m.key !== matrixData.months[0].key"
-                      variant="outline" size="sm" class="h-6 text-[10px] px-2"
-                      @click="generate(m.bulan, m.tahun)"
-                    >
-                      Generate
-                    </Button>
+                    <template v-if="m.key !== matrixData.months[0].key">
+                      <Button
+                        v-if="matrixData.verified?.[m.key]"
+                        variant="outline" size="sm" class="h-6 text-[10px] px-2"
+                        @click="bukaVerifikasiBulan(m.bulan, m.tahun)"
+                      >
+                        Buka Verifikasi
+                      </Button>
+                      <Button
+                        v-else
+                        variant="outline" size="sm" class="h-6 text-[10px] px-2"
+                        @click="generate(m.bulan, m.tahun)"
+                      >
+                        Generate
+                      </Button>
+                    </template>
                   </div>
                 </th>
               </tr>
@@ -278,6 +287,16 @@ const generate = async (bulan: number, tahun: number) => {
     await loadMatrix()
   } catch (err: any) {
     error('Gagal Generate', { description: err?.data?.errors?.bulan?.[0] || err?.message || 'Terjadi kesalahan' })
+  }
+}
+
+const bukaVerifikasiBulan = async (bulan: number, tahun: number) => {
+  try {
+    await saldoAwalService.bukaVerifikasi(bulan, tahun)
+    success('Berhasil', { description: 'Verifikasi dibuka, saldo bulan ini bisa digenerate ulang' })
+    await loadMatrix()
+  } catch (err: any) {
+    error('Gagal', { description: err?.data?.errors?.bulan?.[0] || err?.message || 'Terjadi kesalahan' })
   }
 }
 

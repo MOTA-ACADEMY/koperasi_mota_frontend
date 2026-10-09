@@ -42,6 +42,8 @@ export interface MatrixNode {
 export interface SaldoAwalMatrixResponse {
   buku_periode_id: number
   months: MatrixMonth[]
+  /** Key bulan (`tahun-bulan`) → true bila saldo awal bulan itu sudah terverifikasi. */
+  verified: Record<string, boolean>
   tree: MatrixNode[]
 }
 
@@ -60,8 +62,8 @@ export const saldoAwalService = {
     return apiService.post(`${BASE}/verifikasi`)
   },
 
-  async bukaVerifikasi(): Promise<{ message: string }> {
-    return apiService.post(`${BASE}/buka-verifikasi`)
+  async bukaVerifikasi(bulan?: number, tahun?: number): Promise<{ message: string }> {
+    return apiService.post(`${BASE}/buka-verifikasi`, bulan && tahun ? { bulan, tahun } : undefined)
   },
 
   async matrix(): Promise<SaldoAwalMatrixResponse> {
