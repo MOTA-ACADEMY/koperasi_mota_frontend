@@ -34,11 +34,17 @@ api.interceptors.response.use(
     // Handle common errors
     if (error.response?.status === 401) {
       // Unauthorized - redirect to login
-      localStorage.removeItem('auth_token')
+      ;['auth_token', 'user', 'koperasi', 'koperasi_list'].forEach((key) => localStorage.removeItem(key))
       window.location.href = '/login'
     }
-    
-    if (error.response?.status === 403) {
+
+    if (error.response?.status === 403 && error.response?.data?.code === 'koperasi_required') {
+      // Token belum/tidak lagi terikat ke koperasi yang valid → pilih koperasi dulu
+      localStorage.removeItem('koperasi')
+      if (window.location.pathname !== '/pilih-koperasi') {
+        window.location.href = '/pilih-koperasi'
+      }
+    } else if (error.response?.status === 403) {
       // Forbidden
       console.error('Access forbidden')
     }

@@ -27,12 +27,17 @@
             Koperasi Mota
           </h1>
         </div>
-        <Badge 
-          :variant="darkModeStore.isDarkMode ? 'outline' : 'secondary'" 
-          class="hidden sm:inline-flex border-green-600 text-green-700 dark:border-green-400 dark:text-green-400"
+        <!-- Koperasi aktif — klik untuk pindah koperasi -->
+        <RouterLink
+          v-if="userStore.koperasi"
+          to="/pilih-koperasi"
+          :title="userStore.koperasiList.length > 1 ? 'Ganti koperasi' : userStore.koperasi.nama"
+          class="hidden sm:inline-flex items-center gap-1.5 max-w-[16rem] rounded-full border border-green-600 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors"
         >
-          Dashboard
-        </Badge>
+          <Building2 class="h-3.5 w-3.5 shrink-0" />
+          <span class="truncate">{{ userStore.koperasi.nama }}</span>
+          <ChevronsUpDown v-if="userStore.koperasiList.length > 1" class="h-3.5 w-3.5 shrink-0 opacity-70" />
+        </RouterLink>
       </div>
 
       <!-- Right side - Actions -->
@@ -82,7 +87,7 @@
               {{ userStore.fullUserInfo.displayName }}
             </p>
             <p class="text-xs text-green-600 dark:text-green-500">
-              {{ userStore.user.role }}
+              {{ userStore.user.role === 'admin' ? 'Admin' : userStore.user.role === 'staf' ? 'Staf' : '' }}
             </p>
           </div>
         </div>
@@ -121,14 +126,15 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   CircleUser,
-  LogOut
+  LogOut,
+  Building2,
+  ChevronsUpDown
 } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import { useDarkModeStore, useUserStore, useSidebarStore } from '@/stores'
 import Button from '@/components/ui/Button.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import AvatarFallback from '@/components/ui/AvatarFallback.vue'
-import Badge from '@/components/ui/Badge.vue'
 
 defineEmits<{
   'toggle-mobile-menu': []

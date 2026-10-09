@@ -19,13 +19,37 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue')
+      component: () => import('../views/LoginView.vue'),
+      meta: { guestOnly: true }
+    },
+    {
+      path: '/daftar',
+      name: 'daftar-koperasi',
+      component: () => import('../views/auth/RegisterKoperasiView.vue'),
+      meta: { guestOnly: true }
+    },
+    {
+      path: '/pilih-koperasi',
+      name: 'pilih-koperasi',
+      component: () => import('../views/auth/PilihKoperasiView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/dashboard',
       component: DashboardLayout,
-      meta: { requiresAuth: true },
+      // Semua halaman aplikasi butuh login DAN koperasi aktif (data per koperasi).
+      meta: { requiresAuth: true, requiresKoperasi: true },
       children: [
+        {
+          path: '/koperasi/profil',
+          name: 'koperasi-profil',
+          component: () => import('../views/koperasi/ProfilKoperasiView.vue')
+        },
+        {
+          path: '/koperasi/pengguna',
+          name: 'koperasi-pengguna',
+          component: () => import('../views/koperasi/PenggunaKoperasiView.vue')
+        },
         {
           path: '',
           name: 'dashboard',
@@ -233,14 +257,21 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const isAuthenticated = authService.isAuthenticated()
+  const hasKoperasi = !!authService.getKoperasi()
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+  const requiresKoperasi = to.matched.some((record) => record.meta.requiresKoperasi)
+  const guestOnly = to.matched.some((record) => record.meta.guestOnly)
 
   if (requiresAuth && !isAuthenticated) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
 
-  if (to.name === 'login' && isAuthenticated) {
-    return { path: '/dashboard' }
+  if (requiresKoperasi && !hasKoperasi) {
+    return { path: '/pilih-koperasi', query: { redirect: to.fullPath } }
+  }
+
+  if (guestOnly && isAuthenticated) {
+    return { path: hasKoperasi ? '/dashboard' : '/pilih-koperasi' }
   }
 
   return true

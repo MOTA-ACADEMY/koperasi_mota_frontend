@@ -6,7 +6,7 @@
           <AvatarFallback class="bg-green-600 text-white font-bold">KM</AvatarFallback>
         </Avatar>
         <h1 class="text-xl font-bold text-foreground">Koperasi MOTA</h1>
-        <p class="text-sm text-muted-foreground mt-1">Masuk ke dashboard admin</p>
+        <p class="text-sm text-muted-foreground mt-1">Masuk ke dashboard koperasi</p>
       </div>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -47,6 +47,11 @@
           <Loader2 v-if="userStore.loading" class="h-4 w-4 animate-spin" />
           {{ userStore.loading ? 'Memproses...' : 'Masuk' }}
         </Button>
+
+        <p class="text-center text-sm text-muted-foreground">
+          Koperasi Anda belum terdaftar?
+          <RouterLink to="/daftar" class="text-green-600 hover:underline">Daftarkan koperasi</RouterLink>
+        </p>
       </form>
     </Card>
   </div>
@@ -54,7 +59,7 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { Loader2 } from 'lucide-vue-next'
 import { useUserStore } from '@/stores'
 import { useToast } from '@/composables/useToast'
@@ -79,10 +84,15 @@ const handleSubmit = async () => {
   userStore.clearError()
 
   try {
-    await userStore.login({ email: form.email, password: form.password })
+    const session = await userStore.login({ email: form.email, password: form.password })
     success('Berhasil masuk', { description: `Selamat datang, ${userStore.user.name}` })
 
     const redirect = (route.query.redirect as string) || '/dashboard'
+    // Terdaftar di lebih dari satu koperasi → pilih dulu koperasi yang akan dikelola.
+    if (!session.koperasi) {
+      router.push({ path: '/pilih-koperasi', query: { redirect } })
+      return
+    }
     router.push(redirect)
   } catch {
     // Error message is already set on userStore.error and shown in the form.

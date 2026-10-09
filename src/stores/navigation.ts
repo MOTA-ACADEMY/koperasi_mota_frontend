@@ -41,7 +41,9 @@ import {
   Scale,
   FileStack,
   BookText,
-  MapPinned
+  MapPinned,
+  Landmark,
+  UserCog
 } from 'lucide-vue-next'
 
 export interface NavigationItem {
@@ -63,6 +65,9 @@ export const useNavigationStore = defineStore('navigation', {
       { id: 'reports', name: 'Reports', path: '/reports', icon: FileText },
       { id: 'components', name: 'Components', path: '/components', icon: FileText },
 
+      { id: 'koperasi', name: 'Koperasi', type: 'header' },
+      { id: 'koperasi-profil', name: 'Profil Koperasi', path: '/koperasi/profil', icon: Landmark },
+      { id: 'koperasi-pengguna', name: 'Pengguna', path: '/koperasi/pengguna', icon: UserCog },
       { id: 'management', name: 'Management', type: 'header' },
       { id: 'members', name: 'Anggota', path: '/members', icon: Users, badge: '2.1K' },
       { id: 'kolektor', name: 'Master Kolektor', path: '/kolektor', icon: MapPinned },
