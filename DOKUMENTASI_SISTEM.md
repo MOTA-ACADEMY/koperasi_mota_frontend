@@ -72,16 +72,28 @@ Pola data yang dipakai: **View → (Store, opsional) → Service → `apiService
 Modul akuntansi & kolektor memanggil service langsung dari view; members & simpanan lewat
 Pinia store.
 
-## 4. Autentikasi
+## 4. Autentikasi & Multi-Koperasi
 
-1. `LoginView` → `userStore.login()` → `authService.login()` → `POST /auth/login`.
-2. Token disimpan di `localStorage.auth_token`, data user di `localStorage.user`.
-3. Interceptor request axios menambahkan `Authorization: Bearer <token>`.
-4. Interceptor response: **401** → hapus token dan `window.location.href = '/login'`.
-5. Saat app boot, `useUserStore().hydrate()` memulihkan sesi dari localStorage.
-6. Router guard: route ber-`meta.requiresAuth` (semua anak `/dashboard`) diarahkan ke
-   `/login?redirect=...` bila belum login; halaman login diarahkan ke `/dashboard` bila sudah login.
-7. Token berlaku 24 jam (setting backend). `authService.refreshToken()` ada, tapi belum
+Sistem bersifat SaaS: setiap koperasi adalah tenant terpisah, dan satu user bisa terdaftar di
+banyak koperasi (role per koperasi: `admin` / `staf`). Token login terikat ke satu koperasi;
+seluruh data yang tampil adalah data koperasi aktif.
+
+1. `LoginView` → `userStore.login()` → `POST /auth/login` → `{ user, token, koperasi, koperasi_list }`.
+   - `koperasi` terisi (user hanya punya 1 koperasi) → langsung ke dashboard.
+   - `koperasi` null (user punya >1 koperasi) → ke **`/pilih-koperasi`**.
+2. `/pilih-koperasi` → `userStore.pilihKoperasi(id)` → `POST /auth/pilih-koperasi` → token baru
+   terikat koperasi, lalu halaman dimuat ulang penuh supaya tidak ada data koperasi lama tersisa.
+   Klik nama koperasi di Navbar untuk pindah koperasi.
+3. `/daftar` → `userStore.registerKoperasi()` → `POST /auth/register-koperasi` (koperasi baru + admin).
+4. localStorage: `auth_token`, `user`, `koperasi` (aktif), `koperasi_list`. Dipulihkan saat boot
+   oleh `useUserStore().hydrate()`; `userStore.refreshSession()` (`GET /auth/me`) menyinkronkan ulang.
+5. Interceptor axios: **401** → hapus sesi, ke `/login`; **403 `code: koperasi_required`** →
+   ke `/pilih-koperasi` (token belum terikat atau akses ke koperasi dicabut).
+6. Router guard: `meta.requiresAuth` → harus login; `meta.requiresKoperasi` (semua anak
+   `/dashboard`) → harus sudah memilih koperasi; `meta.guestOnly` (`/login`, `/daftar`) → hanya tamu.
+7. `userStore.isAdmin` = role di koperasi aktif. Halaman Profil (edit) & Pengguna khusus admin
+   (backend juga menolak staf dengan 403).
+8. Token berlaku 24 jam (setting backend). `authService.refreshToken()` ada, tapi belum
    dipanggil otomatis.
 
 Error dari `apiService` dinormalisasi menjadi `{ message, status, data }` — error validasi
@@ -95,6 +107,9 @@ anaknya ditulis absolut (`/members`, `/akuntansi/...`), jadi URL-nya tidak beraw
 | Path | View | Status |
 |---|---|---|
 | `/login` | LoginView | ✅ terhubung API |
+| `/daftar` | auth/RegisterKoperasiView | ✅ daftar koperasi baru |
+| `/pilih-koperasi` | auth/PilihKoperasiView | ✅ pilih / pindah koperasi |
+| `/koperasi/profil`, `/koperasi/pengguna` | koperasi/* | ✅ profil & pengguna koperasi (admin) |
 | `/dashboard` | DashboardView | ⚠ data mock (`stores/dashboard.ts`) |
 | `/members`, `/members/add`, `/members/:id` | master-data/members | ✅ |
 | `/kolektor`, `/kolektor/tambah`, `/kolektor/:id/edit` | master-data/kolektor | ✅ |
@@ -167,6 +182,9 @@ npm run build        # vue-tsc && vite build → dist/
 
 Backend (`php artisan serve`) dan MySQL harus sudah dinyalakan pemilik proyek agar API bisa diakses.
 
+Akun demo (dari `php artisan db:seed --class=DemoSeeder` di backend), password `demo12345`:
+`admin@demo.koperasi.test` (2 koperasi → diminta memilih) dan `staf@demo.koperasi.test` (1 koperasi).
+
 ## 9. Catatan Temuan / Hal yang Perlu Diperhatikan
 
 Temuan saat membaca kode — **belum diubah**, hanya dicatat:
@@ -186,5 +204,11 @@ Temuan saat membaca kode — **belum diubah**, hanya dicatat:
 8. Tiga halaman simpanan adalah duplikasi kode (~580 baris masing-masing) — kandidat dijadikan satu komponen.
 9. `AccountHistoryTab` membaca `simpanan_pokok/wajib/sukarela` dari data anggota, padahal
    `MemberResource` backend tidak mengirim field tersebut → tampil 0.
-10. Belum ada pembatasan menu/halaman berdasarkan `role` user.
+10. Menu sidebar belum disaring berdasarkan role (mis. menu Pengguna tetap tampil untuk staf, halaman menampilkan pesan "khusus admin").
 11. `README.md` & `.github/copilot-instructions.md` sudah usang (masih deskripsi template awal).
+12. **Komponen `Card` dan `Button` mengabaikan atribut `class`** (`class` dideklarasikan sebagai prop
+    sehingga tidak ada di `$attrs`). Akibatnya `<Card class="p-8">` / `<Button class="w-full">` tidak
+    berefek — mis. LoginView tanpa padding. Halaman baru memakai wrapper `<div>` sebagai gantinya.
+    Memperbaiki komponennya akan mengubah tampilan semua halaman yang sudah ada, jadi perlu dicek bersama.
+13. `vue-tsc` (bagian dari `npm run build`) masih gagal karena 26 error tipe lama (mis. halaman
+    simpanan, AddMemberForm); `npx vite build` sendiri berhasil.
