@@ -7,14 +7,26 @@ export interface LoginRequest {
   remember?: boolean
 }
 
-/** Koperasi tempat user terafiliasi, beserta role user di koperasi tersebut. */
+/** Koperasi tempat user terafiliasi, beserta nama role user di koperasi tersebut. */
 export interface KoperasiRingkas {
   id: number
   nama: string
   jenis_koperasi: string | null
   desa_kelurahan: string | null
   kabupaten_kota: string | null
-  role: 'admin' | 'staf'
+  roles: string[]
+  /** Hanya ada pada koperasi aktif: true bila salah satu role user berakses penuh. */
+  akses_penuh?: boolean
+}
+
+/** Node menu dari backend (rbac_menu): grup → menu. */
+export interface MenuNode {
+  id: number
+  kode: string
+  nama: string
+  path: string | null
+  icon: string | null
+  children?: MenuNode[]
 }
 
 export interface SessionUser {
@@ -31,6 +43,10 @@ export interface LoginResponse {
   user: SessionUser
   koperasi: KoperasiRingkas | null
   koperasi_list: KoperasiRingkas[]
+  /** Kode menu yang boleh diakses di koperasi aktif (null = belum memilih koperasi). */
+  akses: string[] | null
+  /** Pohon menu yang boleh diakses — sumber sidebar. */
+  menu: MenuNode[]
   token?: string
   expires_in?: number | null
 }
@@ -67,6 +83,8 @@ export interface ResetPasswordRequest {
   password_confirmation: string
 }
 
+export const SESSION_KEYS = ['auth_token', 'user', 'koperasi', 'koperasi_list', 'akses', 'menu']
+
 function readJson<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key)
@@ -80,6 +98,8 @@ function saveSession(session: LoginResponse) {
   if (session.token) localStorage.setItem('auth_token', session.token)
   localStorage.setItem('user', JSON.stringify(session.user))
   localStorage.setItem('koperasi_list', JSON.stringify(session.koperasi_list ?? []))
+  localStorage.setItem('akses', JSON.stringify(session.akses ?? []))
+  localStorage.setItem('menu', JSON.stringify(session.menu ?? []))
   if (session.koperasi) {
     localStorage.setItem('koperasi', JSON.stringify(session.koperasi))
   } else {
@@ -88,7 +108,7 @@ function saveSession(session: LoginResponse) {
 }
 
 export function clearSession() {
-  ;['auth_token', 'user', 'koperasi', 'koperasi_list'].forEach((key) => localStorage.removeItem(key))
+  SESSION_KEYS.forEach((key) => localStorage.removeItem(key))
 }
 
 // Auth API service
@@ -180,6 +200,15 @@ export const authService = {
 
   getKoperasiList(): KoperasiRingkas[] {
     return readJson<KoperasiRingkas[]>('koperasi_list') ?? []
+  },
+
+  // Kode menu yang boleh diakses di koperasi aktif
+  getAkses(): string[] {
+    return readJson<string[]>('akses') ?? []
+  },
+
+  getMenu(): MenuNode[] {
+    return readJson<MenuNode[]>('menu') ?? []
   },
 
   // Get auth token

@@ -6,7 +6,7 @@
         <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
           👤 User Information
           <Badge v-if="userStore.user.isAuthenticated" variant="default" class="text-xs">
-            {{ userStore.user.role }}
+            {{ userStore.roleLabel }}
           </Badge>
         </h3>
         
@@ -22,7 +22,7 @@
         <div v-else class="space-y-2">
           <p><strong>Name:</strong> {{ userStore.fullUserInfo.displayName }}</p>
           <p><strong>Email:</strong> {{ userStore.user.email }}</p>
-          <p><strong>Role:</strong> {{ userStore.user.role }}</p>
+          <p><strong>Role:</strong> {{ userStore.roleLabel }}</p>
           <Button variant="outline" size="sm" @click="userStore.logout">
             Logout
           </Button>

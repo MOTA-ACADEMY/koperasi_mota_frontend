@@ -5,10 +5,10 @@ import {
   type KoperasiRingkas,
   type LoginRequest,
   type LoginResponse,
+  type MenuNode,
   type RegisterKoperasiRequest
 } from '@/services/authService'
-
-type Role = 'admin' | 'staf' | 'guest'
+import { useNavigationStore } from './navigation'
 
 export const useUserStore = defineStore('user', () => {
   // State
@@ -16,49 +16,62 @@ export const useUserStore = defineStore('user', () => {
     id: number | null
     name: string
     email: string
-    /** Role di koperasi yang sedang aktif. */
-    role: Role
+    /** Nama role di koperasi yang sedang aktif (bisa lebih dari satu). */
+    roles: string[]
     isAuthenticated: boolean
   }>({
     id: null,
     name: '',
     email: '',
-    role: 'guest',
+    roles: [],
     isAuthenticated: false
   })
 
   /** Koperasi aktif; null = sudah login tapi belum memilih koperasi. */
   const koperasi = ref<KoperasiRingkas | null>(null)
   const koperasiList = ref<KoperasiRingkas[]>([])
+  /** Kode menu yang boleh diakses di koperasi aktif (RBAC). */
+  const akses = ref<string[]>([])
+  /** Pohon menu yang boleh diakses — sumber sidebar. */
+  const menu = ref<MenuNode[]>([])
 
   const loading = ref(false)
   const error = ref<string | null>(null)
 
   // Getters
-  const isAdmin = computed(() => user.value.role === 'admin')
+  const aksesPenuh = computed(() => !!koperasi.value?.akses_penuh)
+  const roleLabel = computed(() => user.value.roles.join(', '))
+  /** Boleh mengakses salah satu menu yang disebut (lihat kode di MenuCatalog backend). */
+  const can = (...kodes: string[]) => aksesPenuh.value || kodes.some((kode) => akses.value.includes(kode))
   const needsKoperasi = computed(() => user.value.isAuthenticated && !koperasi.value)
   const fullUserInfo = computed(() => ({
     ...user.value,
     displayName: user.value.name || 'Guest User'
   }))
 
-  function applySession(session: Pick<LoginResponse, 'user' | 'koperasi' | 'koperasi_list'>) {
+  function applySession(session: Pick<LoginResponse, 'user' | 'koperasi' | 'koperasi_list' | 'akses' | 'menu'>) {
     koperasi.value = session.koperasi
     koperasiList.value = session.koperasi_list ?? []
+    akses.value = session.akses ?? []
+    menu.value = session.menu ?? []
     user.value = {
       id: session.user.id,
       name: session.user.name,
       email: session.user.email,
-      role: session.koperasi?.role ?? 'guest',
+      roles: session.koperasi?.roles ?? [],
       isAuthenticated: true
     }
+    useNavigationStore().setFromMenu(menu.value)
   }
 
   function resetState() {
-    user.value = { id: null, name: '', email: '', role: 'guest', isAuthenticated: false }
+    user.value = { id: null, name: '', email: '', roles: [], isAuthenticated: false }
     koperasi.value = null
     koperasiList.value = []
+    akses.value = []
+    menu.value = []
     error.value = null
+    useNavigationStore().setFromMenu([])
   }
 
   // Actions
@@ -128,7 +141,9 @@ export const useUserStore = defineStore('user', () => {
       applySession({
         user: stored,
         koperasi: authService.getKoperasi(),
-        koperasi_list: authService.getKoperasiList()
+        koperasi_list: authService.getKoperasiList(),
+        akses: authService.getAkses(),
+        menu: authService.getMenu()
       })
     }
   }
@@ -156,10 +171,14 @@ export const useUserStore = defineStore('user', () => {
     user,
     koperasi,
     koperasiList,
+    akses,
+    menu,
     loading,
     error,
     // Getters
-    isAdmin,
+    aksesPenuh,
+    roleLabel,
+    can,
     needsKoperasi,
     fullUserInfo,
     // Actions

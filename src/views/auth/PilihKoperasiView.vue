@@ -37,10 +37,12 @@
             </span>
           </span>
           <span
-            class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="kop.role === 'admin' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-muted text-muted-foreground'"
+            v-if="kop.roles.length"
+            class="max-w-[9rem] shrink-0 truncate rounded-full px-2.5 py-0.5 text-xs font-medium"
+            :class="kop.roles.includes('Admin') ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-muted text-muted-foreground'"
+            :title="kop.roles.join(', ')"
           >
-            {{ kop.role === 'admin' ? 'Admin' : 'Staf' }}
+            {{ kop.roles.join(', ') }}
           </span>
           <Loader2 v-if="dipilihId === kop.id" class="h-4 w-4 shrink-0 animate-spin text-green-600" />
           <ChevronRight v-else class="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

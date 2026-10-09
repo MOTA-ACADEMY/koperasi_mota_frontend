@@ -34,7 +34,7 @@ api.interceptors.response.use(
     // Handle common errors
     if (error.response?.status === 401) {
       // Unauthorized - redirect to login
-      ;['auth_token', 'user', 'koperasi', 'koperasi_list'].forEach((key) => localStorage.removeItem(key))
+      ;['auth_token', 'user', 'koperasi', 'koperasi_list', 'akses', 'menu'].forEach((key) => localStorage.removeItem(key))
       window.location.href = '/login'
     }
 

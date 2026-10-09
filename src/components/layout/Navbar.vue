@@ -87,7 +87,7 @@
               {{ userStore.fullUserInfo.displayName }}
             </p>
             <p class="text-xs text-green-600 dark:text-green-500">
-              {{ userStore.user.role === 'admin' ? 'Admin' : userStore.user.role === 'staf' ? 'Staf' : '' }}
+              {{ userStore.roleLabel }}
             </p>
           </div>
         </div>

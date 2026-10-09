@@ -91,8 +91,13 @@ seluruh data yang tampil adalah data koperasi aktif.
    ke `/pilih-koperasi` (token belum terikat atau akses ke koperasi dicabut).
 6. Router guard: `meta.requiresAuth` → harus login; `meta.requiresKoperasi` (semua anak
    `/dashboard`) → harus sudah memilih koperasi; `meta.guestOnly` (`/login`, `/daftar`) → hanya tamu.
-7. `userStore.isAdmin` = role di koperasi aktif. Halaman Profil (edit) & Pengguna khusus admin
-   (backend juga menolak staf dengan 403).
+7. **RBAC (hak akses per menu)**: sesi dari backend berisi `akses` (kode menu yang boleh dibuka) dan
+   `menu` (pohon menu dari `rbac_menu`). Sidebar dibangun dari `menu` (`navigationStore.setFromMenu`,
+   ikon dipetakan di `src/lib/menuIcons.ts`). Route memakai `meta: { menu: 'kode' }`; guard mengarahkan
+   ke `/tidak-diizinkan` bila tidak punya akses (atau ke menu pertama bila Dashboard tidak tersedia).
+   Di komponen: `userStore.can('kode')`. Menu & akses disegarkan dari `/auth/me` setiap
+   `DashboardLayout` dimuat, jadi perubahan role oleh admin berlaku tanpa login ulang.
+   Halaman **Role & Hak Akses** (`/koperasi/role`) dan **Pengguna** (`/koperasi/pengguna`, multi-role).
 8. Token berlaku 24 jam (setting backend). `authService.refreshToken()` ada, tapi belum
    dipanggil otomatis.
 
@@ -204,7 +209,9 @@ Temuan saat membaca kode — **belum diubah**, hanya dicatat:
 8. Tiga halaman simpanan adalah duplikasi kode (~580 baris masing-masing) — kandidat dijadikan satu komponen.
 9. `AccountHistoryTab` membaca `simpanan_pokok/wajib/sukarela` dari data anggota, padahal
    `MemberResource` backend tidak mengirim field tersebut → tampil 0.
-10. Menu sidebar belum disaring berdasarkan role (mis. menu Pengguna tetap tampil untuk staf, halaman menampilkan pesan "khusus admin").
+10. ~~Menu belum disaring berdasarkan role~~ — sudah RBAC (bagian 4). Halaman demo/placeholder lama
+    (Analytics, Components, Loans, DataTable Demo, dll.) tidak masuk `rbac_menu`; route-nya masih ada
+    dan bisa dibuka lewat URL oleh semua user yang login.
 11. `README.md` & `.github/copilot-instructions.md` sudah usang (masih deskripsi template awal).
 12. **Komponen `Card` dan `Button` mengabaikan atribut `class`** (`class` dideklarasikan sebagai prop
     sehingga tidak ada di `$attrs`). Akibatnya `<Card class="p-8">` / `<Button class="w-full">` tidak

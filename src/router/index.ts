@@ -43,17 +43,31 @@ const router = createRouter({
         {
           path: '/koperasi/profil',
           name: 'koperasi-profil',
-          component: () => import('../views/koperasi/ProfilKoperasiView.vue')
+          component: () => import('../views/koperasi/ProfilKoperasiView.vue'),
+          meta: { menu: 'koperasi.profil' }
+        },
+        {
+          path: '/koperasi/role',
+          name: 'koperasi-role',
+          component: () => import('../views/koperasi/RoleKoperasiView.vue'),
+          meta: { menu: 'koperasi.role' }
+        },
+        {
+          path: '/tidak-diizinkan',
+          name: 'tidak-diizinkan',
+          component: () => import('../views/TidakDiizinkanView.vue')
         },
         {
           path: '/koperasi/pengguna',
           name: 'koperasi-pengguna',
-          component: () => import('../views/koperasi/PenggunaKoperasiView.vue')
+          component: () => import('../views/koperasi/PenggunaKoperasiView.vue'),
+          meta: { menu: 'koperasi.pengguna' }
         },
         {
           path: '',
           name: 'dashboard',
-          component: () => import('../views/DashboardView.vue')
+          component: () => import('../views/DashboardView.vue'),
+          meta: { menu: 'dashboard' }
         },
         {
           path: '/analytics',
@@ -66,17 +80,20 @@ const router = createRouter({
             {
               path: '',
               name: 'members',
-              component: () => import('../views/master-data/members/index.vue') // Placeholder
+              component: () => import('../views/master-data/members/index.vue'),
+              meta: { menu: 'anggota' }
             },
             {
               path: 'add',
               name: 'add-member',
-              component: () => import('../views/master-data/members/add.vue')
+              component: () => import('../views/master-data/members/add.vue'),
+              meta: { menu: 'anggota' }
             },
             {
               path: ':id',
               name: 'member-detail',
-              component: () => import('../views/master-data/members/detail.vue')
+              component: () => import('../views/master-data/members/detail.vue'),
+              meta: { menu: 'anggota' }
             }
           ]
         },
@@ -86,17 +103,20 @@ const router = createRouter({
             {
               path: '',
               name: 'kolektor',
-              component: () => import('../views/master-data/kolektor/index.vue')
+              component: () => import('../views/master-data/kolektor/index.vue'),
+              meta: { menu: 'kolektor' }
             },
             {
               path: 'tambah',
               name: 'kolektor-tambah',
-              component: () => import('../views/master-data/kolektor/form.vue')
+              component: () => import('../views/master-data/kolektor/form.vue'),
+              meta: { menu: 'kolektor' }
             },
             {
               path: ':id/edit',
               name: 'kolektor-edit',
-              component: () => import('../views/master-data/kolektor/form.vue')
+              component: () => import('../views/master-data/kolektor/form.vue'),
+              meta: { menu: 'kolektor' }
             }
           ]
         },
@@ -106,37 +126,44 @@ const router = createRouter({
             {
               path: 'buku-periode',
               name: 'akuntansi-buku-periode',
-              component: () => import('../views/akuntansi/buku-periode/index.vue')
+              component: () => import('../views/akuntansi/buku-periode/index.vue'),
+              meta: { menu: 'akuntansi.buku-periode' }
             },
             {
               path: 'tipe-akun',
               name: 'akuntansi-tipe-akun',
-              component: () => import('../views/akuntansi/tipe-akun/index.vue')
+              component: () => import('../views/akuntansi/tipe-akun/index.vue'),
+              meta: { menu: 'akuntansi.tipe-akun' }
             },
             {
               path: 'kategori-akun',
               name: 'akuntansi-kategori-akun',
-              component: () => import('../views/akuntansi/kategori-akun/index.vue')
+              component: () => import('../views/akuntansi/kategori-akun/index.vue'),
+              meta: { menu: 'akuntansi.kategori-akun' }
             },
             {
               path: 'master-akun',
               name: 'akuntansi-master-akun',
-              component: () => import('../views/akuntansi/master-akun/index.vue')
+              component: () => import('../views/akuntansi/master-akun/index.vue'),
+              meta: { menu: 'akuntansi.master-akun' }
             },
             {
               path: 'saldo-awal',
               name: 'akuntansi-saldo-awal',
-              component: () => import('../views/akuntansi/saldo-awal/index.vue')
+              component: () => import('../views/akuntansi/saldo-awal/index.vue'),
+              meta: { menu: 'akuntansi.saldo-awal' }
             },
             {
               path: 'jurnal-memorial',
               name: 'akuntansi-jurnal-memorial',
-              component: () => import('../views/akuntansi/jurnal-memorial/index.vue')
+              component: () => import('../views/akuntansi/jurnal-memorial/index.vue'),
+              meta: { menu: 'akuntansi.jurnal-memorial' }
             },
             {
               path: 'jurnal-umum',
               name: 'akuntansi-jurnal-umum',
-              component: () => import('../views/akuntansi/jurnal-umum/index.vue')
+              component: () => import('../views/akuntansi/jurnal-umum/index.vue'),
+              meta: { menu: 'akuntansi.jurnal-umum' }
             }
           ]
         },
@@ -146,17 +173,20 @@ const router = createRouter({
             {
               path: 'pokok',
               name: 'simpanan-pokok',
-              component: () => import('../views/simpanan/pokok/index.vue')
+              component: () => import('../views/simpanan/pokok/index.vue'),
+              meta: { menu: 'simpanan.pokok' }
             },
             {
               path: 'wajib',
               name: 'simpanan-wajib',
-              component: () => import('../views/simpanan/wajib/index.vue')
+              component: () => import('../views/simpanan/wajib/index.vue'),
+              meta: { menu: 'simpanan.wajib' }
             },
             {
               path: 'sukarela',
               name: 'simpanan-sukarela',
-              component: () => import('../views/simpanan/sukarela/index.vue')
+              component: () => import('../views/simpanan/sukarela/index.vue'),
+              meta: { menu: 'simpanan.sukarela' }
             }
           ]
         },
@@ -188,7 +218,8 @@ const router = createRouter({
         {
           path: '/members',
           name: 'members',
-          component: () => import('../views/master-data/members/index.vue')
+          component: () => import('../views/master-data/members/index.vue'),
+          meta: { menu: 'anggota' }
         },
         {
           path: '/branches',
@@ -274,7 +305,22 @@ router.beforeEach((to) => {
     return { path: hasKoperasi ? '/dashboard' : '/pilih-koperasi' }
   }
 
+  // RBAC: halaman yang terikat menu hanya boleh dibuka bila menu itu ada di hak akses user.
+  const menu = to.meta.menu as string | undefined
+  if (menu && hasKoperasi && !bolehAkses(menu)) {
+    // Mis. user tanpa menu Dashboard yang baru login → arahkan ke menu pertama miliknya.
+    const pertama = authService.getMenu()[0]?.children?.[0]?.path
+    if (to.name === 'dashboard' && pertama && pertama !== to.path) {
+      return { path: pertama }
+    }
+    return { name: 'tidak-diizinkan', query: { dari: to.fullPath } }
+  }
+
   return true
 })
+
+function bolehAkses(menu: string): boolean {
+  return !!authService.getKoperasi()?.akses_penuh || authService.getAkses().includes(menu)
+}
 
 export default router

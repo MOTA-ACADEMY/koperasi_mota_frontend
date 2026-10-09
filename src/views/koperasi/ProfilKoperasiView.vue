@@ -4,7 +4,6 @@
       <h1 class="text-2xl font-bold text-foreground">Profil Koperasi</h1>
       <p class="text-muted-foreground mt-1">
         Identitas koperasi yang sedang aktif.
-        <span v-if="!userStore.isAdmin">Hanya admin yang dapat mengubah data ini.</span>
       </p>
     </div>
 
@@ -13,7 +12,7 @@
         <div v-if="loading" class="py-10 text-center text-sm text-muted-foreground">Memuat...</div>
 
         <form v-else class="space-y-6" @submit.prevent="submit">
-          <fieldset :disabled="!userStore.isAdmin" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2 md:col-span-2">
               <Label for="nama">Nama Koperasi</Label>
               <Input id="nama" v-model="form.nama" required />
@@ -74,7 +73,7 @@
             </div>
           </fieldset>
 
-          <div v-if="userStore.isAdmin" class="flex justify-end">
+          <div class="flex justify-end">
             <Button type="submit" variant="primary" :disabled="submitting">
               {{ submitting ? 'Menyimpan...' : 'Simpan Perubahan' }}
             </Button>

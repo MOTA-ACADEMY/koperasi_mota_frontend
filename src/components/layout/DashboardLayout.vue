@@ -30,13 +30,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useDarkModeStore, useSidebarStore } from '@/stores'
+import { useDarkModeStore, useSidebarStore, useUserStore } from '@/stores'
 import Navbar from '@/components/layout/Navbar.vue'
 import Sidebar from '@/components/layout/Sidebar.vue'
 import BottomBar from '@/components/layout/BottomBar.vue'
 
 const darkModeStore = useDarkModeStore()
 const sidebarStore = useSidebarStore()
+const userStore = useUserStore()
 const isMobileMenuOpen = ref(false)
 
 const toggleMobileMenu = () => {
@@ -53,6 +54,10 @@ onMounted(() => {
   
   // Initialize sidebar state from localStorage
   sidebarStore.initializeSidebar()
+
+  // Segarkan menu & hak akses dari backend (role bisa diubah admin sejak login terakhir).
+  // Gagal di sini tidak fatal: sidebar tetap memakai menu dari sesi tersimpan.
+  userStore.refreshSession().catch(() => {})
   
   // Close mobile menu when clicking outside on larger screens
   const handleResize = () => {

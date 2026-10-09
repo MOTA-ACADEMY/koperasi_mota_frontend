@@ -20,13 +20,11 @@ export interface KoperasiProfil {
 
 export type KoperasiProfilPayload = Omit<KoperasiProfil, 'id' | 'is_aktif'>
 
-export type KoperasiRole = 'admin' | 'staf'
-
 export interface PenggunaKoperasi {
   id: number
   name: string
   email: string
-  role: KoperasiRole
+  roles: { id: number; nama: string; akses_penuh: boolean }[]
   is_aktif: boolean
   bergabung_at: string | null
 }
@@ -35,7 +33,7 @@ export interface PenggunaPayload {
   email: string
   name?: string
   password?: string
-  role: KoperasiRole
+  role_ids: number[]
 }
 
 export const JENIS_KOPERASI = [
@@ -68,7 +66,7 @@ export const koperasiService = {
     return response.data
   },
 
-  async ubahPengguna(id: number, payload: { role: KoperasiRole; is_aktif: boolean }): Promise<PenggunaKoperasi> {
+  async ubahPengguna(id: number, payload: { role_ids: number[]; is_aktif: boolean }): Promise<PenggunaKoperasi> {
     const response = await apiService.put<{ data: PenggunaKoperasi }>(`/koperasi/users/${id}`, payload)
     return response.data
   },
