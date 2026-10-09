@@ -1,62 +1,65 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-green-50 dark:from-slate-950 dark:to-green-950 px-4 py-10">
-    <!-- class di <Card> tidak diteruskan komponennya, jadi lebar & padding diatur di wrapper -->
-    <div class="w-full max-w-lg">
-      <Card>
-        <div class="p-8">
-          <div class="text-center mb-6">
-            <div class="h-12 w-12 mx-auto mb-3 rounded-full bg-green-600 text-white flex items-center justify-center">
-              <Building2 class="h-6 w-6" />
-            </div>
-            <h1 class="text-xl font-bold text-foreground">Pilih Koperasi</h1>
-            <p class="text-sm text-muted-foreground mt-1">
-              Halo, {{ userStore.user.name || 'Pengguna' }}. Anda terdaftar di beberapa koperasi —
-              pilih koperasi yang ingin dikelola.
-            </p>
-          </div>
-
-          <div v-if="memuat" class="py-8 text-center text-sm text-muted-foreground">Memuat daftar koperasi...</div>
-
-          <div v-else-if="userStore.koperasiList.length === 0" class="py-6 text-center space-y-2">
-            <p class="text-sm text-muted-foreground">Akun Anda belum terhubung ke koperasi aktif mana pun.</p>
-            <p class="text-xs text-muted-foreground">Minta admin koperasi menambahkan email Anda, atau daftarkan koperasi baru.</p>
-          </div>
-
-          <ul v-else class="space-y-2">
-            <li v-for="kop in userStore.koperasiList" :key="kop.id">
-              <button
-                type="button"
-                class="w-full text-left rounded-lg border border-border p-4 transition-colors hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-60 flex items-center justify-between gap-3"
-                :class="{ 'border-green-600 bg-green-50 dark:bg-green-900/20': kop.id === userStore.koperasi?.id }"
-                :disabled="dipilihId !== null"
-                @click="pilih(kop.id)"
-              >
-                <div class="min-w-0">
-                  <p class="font-medium text-foreground truncate">{{ kop.nama }}</p>
-                  <p class="text-xs text-muted-foreground truncate">
-                    {{ [kop.desa_kelurahan, kop.kabupaten_kota].filter(Boolean).join(', ') || 'Alamat belum diisi' }}
-                  </p>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <Badge :variant="kop.role === 'admin' ? 'green' : 'secondary'">{{ kop.role === 'admin' ? 'Admin' : 'Staf' }}</Badge>
-                  <Loader2 v-if="dipilihId === kop.id" class="h-4 w-4 animate-spin text-green-600" />
-                  <ChevronRight v-else class="h-4 w-4 text-muted-foreground" />
-                </div>
-              </button>
-            </li>
-          </ul>
-
-          <div class="mt-6 flex items-center justify-between text-sm">
-            <RouterLink v-if="userStore.koperasi" to="/dashboard" class="text-muted-foreground hover:text-foreground">
-              ← Kembali
-            </RouterLink>
-            <span v-else />
-            <button type="button" class="text-destructive hover:underline" @click="keluar">Keluar</button>
-          </div>
-        </div>
-      </Card>
+  <AuthLayout ukuran="md">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight text-foreground">Pilih koperasi</h1>
+      <p class="mt-2 text-sm text-muted-foreground">
+        Halo, {{ userStore.user.name || 'Pengguna' }}. Anda terdaftar di beberapa koperasi —
+        pilih yang ingin dikelola sekarang.
+      </p>
     </div>
-  </div>
+
+    <div v-if="memuat" class="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+      <Loader2 class="h-4 w-4 animate-spin" /> Memuat daftar koperasi...
+    </div>
+
+    <div v-else-if="userStore.koperasiList.length === 0" class="rounded-lg border border-dashed border-border p-6 text-center">
+      <p class="text-sm font-medium text-foreground">Akun Anda belum terhubung ke koperasi aktif mana pun.</p>
+      <p class="mt-1 text-xs text-muted-foreground">Minta admin koperasi menambahkan email Anda, atau daftarkan koperasi baru.</p>
+      <RouterLink to="/daftar" class="mt-4 inline-block text-sm font-medium text-green-600 hover:underline">Daftarkan koperasi</RouterLink>
+    </div>
+
+    <ul v-else class="space-y-3">
+      <li v-for="kop in userStore.koperasiList" :key="kop.id">
+        <button
+          type="button"
+          class="group flex w-full items-center gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:border-green-600 hover:shadow-md hover:shadow-green-600/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-600/20 disabled:cursor-not-allowed disabled:opacity-60"
+          :class="kop.id === userStore.koperasi?.id ? 'border-green-600 bg-green-50/60 dark:bg-green-950/30' : 'border-border'"
+          :disabled="dipilihId !== null"
+          @click="pilih(kop.id)"
+        >
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+            <Building2 class="h-5 w-5" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-medium text-foreground">{{ kop.nama }}</span>
+            <span class="block truncate text-xs text-muted-foreground">
+              {{ [kop.desa_kelurahan, kop.kabupaten_kota].filter(Boolean).join(', ') || 'Alamat belum diisi' }}
+            </span>
+          </span>
+          <span
+            class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium"
+            :class="kop.role === 'admin' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-muted text-muted-foreground'"
+          >
+            {{ kop.role === 'admin' ? 'Admin' : 'Staf' }}
+          </span>
+          <Loader2 v-if="dipilihId === kop.id" class="h-4 w-4 shrink-0 animate-spin text-green-600" />
+          <ChevronRight v-else class="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        </button>
+      </li>
+    </ul>
+
+    <div class="mt-8 flex items-center justify-between text-sm">
+      <RouterLink
+        v-if="userStore.koperasi"
+        to="/dashboard"
+        class="text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ← Kembali ke dashboard
+      </RouterLink>
+      <span v-else />
+      <button type="button" class="font-medium text-red-600 hover:underline dark:text-red-400" @click="keluar">Keluar</button>
+    </div>
+  </AuthLayout>
 </template>
 
 <script setup lang="ts">
@@ -65,8 +68,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { Building2, ChevronRight, Loader2 } from 'lucide-vue-next'
 import { useUserStore } from '@/stores'
 import { useToast } from '@/composables/useToast'
-import Card from '@/components/ui/Card.vue'
-import Badge from '@/components/ui/Badge.vue'
+import AuthLayout from '@/components/layout/AuthLayout.vue'
 
 const userStore = useUserStore()
 const router = useRouter()

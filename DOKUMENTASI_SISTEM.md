@@ -53,7 +53,7 @@ src/
 │                          # darkMode, toast, dashboard (mock), account (mock)
 ├── composables/           # useToast, useGlobalDialog, useDialogManager, useDashboard
 ├── components/
-│   ├── layout/            # DashboardLayout, Navbar, Sidebar, BottomBar
+│   ├── layout/            # DashboardLayout, Navbar, Sidebar, BottomBar, AuthLayout (login/daftar/pilih koperasi)
 │   ├── ui/                # Button, Card, Dialog, DataTable, Select, SearchableSelect, ...
 │   ├── form/              # AddMemberForm, ContactField, IdCardField
 │   ├── map/               # LocationPicker (titik anggota), PolygonAreaPicker (wilayah kolektor)
@@ -212,3 +212,8 @@ Temuan saat membaca kode — **belum diubah**, hanya dicatat:
     Memperbaiki komponennya akan mengubah tampilan semua halaman yang sudah ada, jadi perlu dicek bersama.
 13. `vue-tsc` (bagian dari `npm run build`) masih gagal karena 26 error tipe lama (mis. halaman
     simpanan, AddMemberForm); `npx vite build` sendiri berhasil.
+14. **Halaman auth** (`/login`, `/daftar`, `/pilih-koperasi`) memakai `components/layout/AuthLayout.vue`
+    (panel brand hijau + panel form; `ukuran` = `sm` | `md` | `lg`). Form-nya memakai elemen native
+    bertema Tailwind, bukan `Input`/`Button` bawaan, karena komponen itu mengabaikan `class` (butir 12).
+    Chip "Akun demo" di halaman login hanya tampil saat `npm run dev`; datanya dikondisikan pada
+    `import.meta.env.DEV` sehingga tidak ikut ke bundel produksi (sudah dicek tidak ada di `dist`).
