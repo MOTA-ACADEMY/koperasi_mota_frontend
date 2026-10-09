@@ -1,392 +1,328 @@
 <template>
-  <div :class="[
-    'min-h-full transition-all duration-300'
-  ]">
-    <!-- Main Content Area -->
-    <div class="p-6 space-y-6">
-      <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 :class="[
-              'text-3xl font-bold transition-colors duration-300',
-              darkModeStore.themeClasses.text.primary
-            ]">
-              Dashboard Overview
-            </h1>
-            <p :class="[
-              'text-sm mt-1 transition-colors duration-300',
-              darkModeStore.themeClasses.text.secondary
-            ]">
-              Welcome back! Here's what's happening with your cooperative today.
-            </p>
-          </div>
-          <div class="flex items-center space-x-3">
-            <Button
-              variant="outline"
-              size="sm"
-              @click="dashboardStore.refreshMetrics"
-              :disabled="dashboardStore.loading"
-              class="hover:scale-105 transition-all duration-300"
-            >
-              <RefreshCw :class="['h-4 w-4 mr-2', { 'animate-spin': dashboardStore.loading }]" />
-              {{ dashboardStore.loading ? 'Refreshing...' : 'Refresh' }}
-            </Button>
-            <Button
-              size="sm"
-              class="hover:scale-105 transition-all duration-300"
-            >
-              <Download class="h-4 w-4 mr-2" />
-              Export
-            </Button>
-          </div>
-        </div>
+  <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div class="min-w-0">
+        <p class="text-sm text-muted-foreground">{{ hariIni }}</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          {{ salam }}, {{ namaDepan }}
+        </h1>
+        <p class="mt-1 truncate text-sm text-muted-foreground">
+          Ringkasan {{ userStore.koperasi?.nama || 'koperasi' }}
+          <template v-if="data?.akuntansi?.periode_aktif"> · Buku periode {{ data.akuntansi.periode_aktif.tahun }}</template>
+        </p>
+      </div>
 
-        <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card
-            v-for="metric in dashboardStore.metrics"
-            :key="metric.id"
-            role="button"
-            tabindex="0"
-            :class="`hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer transform ${darkModeStore.themeClasses.card}`"
-            @click="() => console.log('Metric clicked:', metric.title)"
-            @keydown.enter="() => console.log('Metric clicked:', metric.title)"
-            @keydown.space="() => console.log('Metric clicked:', metric.title)"
-          >
-            <CardContent class="p-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p :class="[
-                    'text-sm font-medium transition-colors duration-300',
-                    darkModeStore.themeClasses.text.secondary
-                  ]">
-                    {{ metric.title }}
-                  </p>
-                  <p :class="[
-                    'text-2xl font-bold mt-2 transition-colors duration-300',
-                    darkModeStore.themeClasses.text.primary
-                  ]">
-                    {{ metric.value }}
-                  </p>
-                  <div class="flex items-center mt-2">
-                    <TrendingUp 
-                      v-if="metric.changeType === 'increase'" 
-                      class="h-4 w-4 text-green-500 mr-1" 
-                    />
-                    <TrendingDown 
-                      v-else 
-                      class="h-4 w-4 text-red-500 mr-1" 
-                    />
-                    <span :class="[
-                      'text-sm font-medium',
-                      metric.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                    ]">
-                      {{ Math.abs(metric.change) }}%
-                    </span>
-                    <span :class="[
-                      'text-sm ml-1 transition-colors duration-300',
-                      darkModeStore.themeClasses.text.muted
-                    ]">
-                      vs last month
-                    </span>
-                  </div>
-                </div>
-                <Avatar class="h-12 w-12">
-                  <AvatarFallback :class="metric.color + ' text-white text-lg'">
-                    {{ metric.icon }}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Revenue Chart -->
-          <Card :class="`hover:shadow-lg transition-all duration-300 ${darkModeStore.themeClasses.card}`">
-            <CardContent class="p-4">
-              <div class="flex items-center justify-between mb-6">
-                <div>
-                  <h3 :class="[
-                    'text-lg font-semibold transition-colors duration-300',
-                    darkModeStore.themeClasses.text.primary
-                  ]">
-                    Revenue Overview
-                  </h3>
-                  <p :class="[
-                    'text-sm transition-colors duration-300',
-                    darkModeStore.themeClasses.text.secondary
-                  ]">
-                    Monthly revenue and expenses comparison
-                  </p>
-                </div>
-                <Badge variant="outline">6 Months</Badge>
-              </div>
-              
-              <!-- Revenue Chart -->
-              <div class="h-64 relative">
-                <!-- Chart Container -->
-                <div class="w-full h-full flex items-end justify-between px-4 pb-8 space-x-2">
-                  <div 
-                    v-for="(month, index) in dashboardStore.chartData.labels" 
-                    :key="month" 
-                    class="flex-1 flex flex-col items-center space-y-1"
-                  >
-                    <!-- Revenue Bar -->
-                    <div class="w-full flex items-end space-x-1 h-40">
-                      <div 
-                        class="bg-blue-500 rounded-t-sm flex-1 transition-all duration-500 hover:bg-blue-600"
-                        :style="{ 
-                          height: `${(dashboardStore.chartData.datasets[0].data[index] / 100) * 100}%`,
-                          minHeight: '8px'
-                        }"
-                        :title="`Revenue: $${dashboardStore.chartData.datasets[0].data[index]}k`"
-                      />
-                      <!-- Expenses Bar -->
-                      <div 
-                        class="bg-red-500 rounded-t-sm flex-1 transition-all duration-500 hover:bg-red-600"
-                        :style="{ 
-                          height: `${(dashboardStore.chartData.datasets[1].data[index] / 100) * 100}%`,
-                          minHeight: '8px'
-                        }"
-                        :title="`Expenses: $${dashboardStore.chartData.datasets[1].data[index]}k`"
-                      />
-                    </div>
-                    <!-- Month Label -->
-                    <span :class="[
-                      'text-xs font-medium transition-colors duration-300',
-                      darkModeStore.themeClasses.text.secondary
-                    ]">
-                      {{ month }}
-                    </span>
-                  </div>
-                </div>
-                
-                <!-- Legend -->
-                <div class="absolute bottom-0 left-0 right-0 flex justify-center space-x-6 py-2">
-                  <div class="flex items-center space-x-2">
-                    <div class="w-3 h-3 bg-blue-500 rounded"></div>
-                    <span :class="[
-                      'text-xs transition-colors duration-300',
-                      darkModeStore.themeClasses.text.secondary
-                    ]">
-                      Revenue (${{ dashboardStore.totalRevenue }}k)
-                    </span>
-                  </div>
-                  <div class="flex items-center space-x-2">
-                    <div class="w-3 h-3 bg-red-500 rounded"></div>
-                    <span :class="[
-                      'text-xs transition-colors duration-300',
-                      darkModeStore.themeClasses.text.secondary
-                    ]">
-                      Expenses (${{ dashboardStore.totalExpenses }}k)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Performance Chart -->
-          <Card :class="`hover:shadow-lg transition-all duration-300 ${darkModeStore.themeClasses.card}`">
-            <CardContent class="p-4">
-              <div class="flex items-center justify-between mb-6">
-                <div>
-                  <h3 :class="[
-                    'text-lg font-semibold transition-colors duration-300',
-                    darkModeStore.themeClasses.text.primary
-                  ]">
-                    Branch Performance
-                  </h3>
-                  <p :class="[
-                    'text-sm transition-colors duration-300',
-                    darkModeStore.themeClasses.text.secondary
-                  ]">
-                    Performance vs targets
-                  </p>
-                </div>
-                <Badge variant="secondary">Real-time</Badge>
-              </div>
-              
-              <div class="space-y-4">
-                <div 
-                  v-for="performer in dashboardStore.topPerformers" 
-                  :key="performer.id"
-                  class="flex items-center justify-between"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div :class="['w-3 h-3 rounded-full', performer.color]" />
-                    <span :class="[
-                      'font-medium transition-colors duration-300',
-                      darkModeStore.themeClasses.text.primary
-                    ]">
-                      {{ performer.name }}
-                    </span>
-                  </div>
-                  <div class="flex items-center space-x-3">
-                    <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        :class="['h-2 rounded-full transition-all duration-500', performer.color]"
-                        :style="{ width: `${performer.performance}%` }"
-                      />
-                    </div>
-                    <span :class="[
-                      'text-sm font-medium w-12 text-right transition-colors duration-300',
-                      darkModeStore.themeClasses.text.secondary
-                    ]">
-                      {{ performer.performance }}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <!-- Recent Activities -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Activities List -->
-          <Card :class="`hover:shadow-lg transition-all duration-300 ${darkModeStore.themeClasses.card}`">
-            <CardContent class="p-4">
-              <div class="flex items-center justify-between mb-6">
-                <h3 :class="[
-                  'text-lg font-semibold transition-colors duration-300',
-                  darkModeStore.themeClasses.text.primary
-                ]">
-                  Recent Activities
-                </h3>
-                <Button variant="outline" size="sm" class="hover:scale-105 transition-all duration-300">
-                  View All
-                </Button>
-              </div>
-              
-              <div class="space-y-4">
-                <div 
-                  v-for="activity in dashboardStore.recentActivities.slice(0, 5)" 
-                  :key="activity.id"
-                  class="flex items-center space-x-4 p-3 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 dark:hover:text-white transition-all duration-300 group"
-                >
-                  <Avatar class="h-10 w-10">
-                    <AvatarFallback :class="`text-sm font-medium ${getActivityColor(activity.type)}`">
-                      {{ getActivityIcon(activity.type) }}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div class="flex-1 min-w-0">
-                    <p :class="[
-                      'text-sm font-medium transition-colors duration-300 group-hover:text-white',
-                      darkModeStore.themeClasses.text.primary
-                    ]">
-                      {{ activity.user }}
-                    </p>
-                    <p :class="[
-                      'text-xs transition-colors duration-300 group-hover:text-white',
-                      darkModeStore.themeClasses.text.secondary
-                    ]">
-                      {{ activity.action }} • {{ activity.amount }}
-                    </p>
-                  </div>
-                  <span :class="[
-                    'text-xs transition-colors duration-300 group-hover:text-white',
-                    darkModeStore.themeClasses.text.muted
-                  ]">
-                    {{ activity.time }}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Quick Actions -->
-          <Card :class="`hover:shadow-lg transition-all duration-300 ${darkModeStore.themeClasses.card}`">
-            <CardContent class="p-4">
-              <h3 :class="[
-                'text-lg font-semibold mb-6 transition-colors duration-300',
-                darkModeStore.themeClasses.text.primary
-              ]">
-                Quick Actions
-              </h3>
-              
-              <div class="grid grid-cols-2 gap-4">
-                <Button
-                  v-for="action in quickActions"
-                  :key="action.name"
-                  variant="outline"
-                  size="lg"
-                  class="!flex !flex-col !items-center !p-4 !h-auto"
-                  @click="handleQuickAction(action.action)"
-                >
-                  <component :is="action.icon" class="h-8 w-8 mb-2" />
-                  <span class="text-sm font-medium">{{ action.name }}</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <RouterLink v-for="aksi in aksiCepat" :key="aksi.to" :to="aksi.to" class="btn-sekunder">
+          <component :is="aksi.icon" class="h-4 w-4" />
+          {{ aksi.label }}
+        </RouterLink>
+        <button
+          type="button"
+          class="btn-sekunder px-2.5"
+          :disabled="memuat"
+          aria-label="Muat ulang data"
+          title="Muat ulang"
+          @click="muat"
+        >
+          <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': memuat }" />
+        </button>
       </div>
     </div>
+
+    <!-- Gagal memuat -->
+    <div
+      v-if="galat && !data"
+      class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+      role="alert"
+    >
+      <CircleAlert class="mt-0.5 h-4 w-4 shrink-0" />
+      <div>
+        <p class="font-medium">Ringkasan tidak dapat dimuat.</p>
+        <p class="mt-0.5 opacity-90">{{ galat }}</p>
+      </div>
+    </div>
+
+    <!-- Kerangka saat pertama kali memuat -->
+    <template v-else-if="!data">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div v-for="n in 4" :key="n" class="h-[132px] animate-pulse rounded-xl border border-border bg-card" />
+      </div>
+      <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div class="h-96 animate-pulse rounded-xl border border-border bg-card xl:col-span-2" />
+        <div class="h-96 animate-pulse rounded-xl border border-border bg-card" />
+      </div>
+    </template>
+
+    <!-- Konten (saat refresh, tampilan lama ditahan redup — tanpa lompatan layout) -->
+    <div v-else class="space-y-6 transition-opacity duration-200" :class="{ 'opacity-60': memuat }">
+      <div
+        v-if="!data.anggota && !data.simpanan && !data.akuntansi"
+        class="rounded-xl border border-dashed border-border p-10 text-center"
+      >
+        <LayoutDashboard class="mx-auto h-8 w-8 text-muted-foreground/60" />
+        <p class="mt-3 text-sm font-medium text-foreground">Belum ada ringkasan untuk ditampilkan</p>
+        <p class="mt-1 text-sm text-muted-foreground">Role Anda belum memiliki akses ke modul anggota, simpanan, atau akuntansi.</p>
+      </div>
+
+      <!-- Statistik utama -->
+      <div v-if="tiles.length" class="grid grid-cols-1 gap-4 sm:grid-cols-2" :class="KOLOM_TILE[tiles.length] ?? 'xl:grid-cols-4'">
+        <StatTile v-for="tile in tiles" :key="tile.label" :label="tile.label" :value="tile.value" :icon="tile.icon" :to="tile.to">
+          <component :is="tile.subIcon" v-if="tile.subIcon" class="h-3.5 w-3.5 shrink-0" :class="tile.subClass" />
+          <span :class="tile.subClass">{{ tile.sub }}</span>
+        </StatTile>
+      </div>
+
+      <!-- Grafik + per jenis -->
+      <div v-if="data.simpanan" class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div class="xl:col-span-2">
+          <TrenSimpananChart :tren="data.simpanan.tren" :periode-ini="data.periode" />
+        </div>
+
+        <section class="rounded-xl border border-border bg-card p-5" aria-labelledby="jenis-judul">
+          <h2 id="jenis-judul" class="text-base font-semibold text-foreground">Simpanan {{ formatPeriode(data.periode) }}</h2>
+          <p class="mt-0.5 text-sm text-muted-foreground">Terkumpul dari total tagihan per jenis</p>
+
+          <ul class="mt-5 space-y-5">
+            <li v-for="jenis in data.simpanan.per_jenis" :key="jenis.jenis">
+              <RouterLink :to="`/simpanan/${jenis.jenis}`" class="group block rounded-lg">
+                <div class="flex items-baseline justify-between gap-3">
+                  <span class="text-sm font-medium text-foreground group-hover:text-green-700 dark:group-hover:text-green-400">
+                    Simpanan {{ jenis.jenis }}
+                  </span>
+                  <span class="text-sm font-semibold text-foreground">{{ persenJenis(jenis) }}%</span>
+                </div>
+                <!-- Meter: isian aksen, lintasan dari ramp yang sama (lebih terang) -->
+                <div
+                  class="mt-2 h-2 overflow-hidden rounded-full bg-green-100 dark:bg-green-950"
+                  role="meter"
+                  :aria-valuenow="persenJenis(jenis)"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  :aria-label="`Simpanan ${jenis.jenis} terkumpul`"
+                >
+                  <div class="h-full rounded-full bg-green-600 transition-[width] duration-500" :style="{ width: `${persenJenis(jenis)}%` }" />
+                </div>
+                <p class="mt-1.5 flex justify-between gap-2 text-xs text-muted-foreground">
+                  <span>{{ formatRupiah(jenis.terkumpul) }} / {{ formatRupiah(jenis.ditagih) }}</span>
+                  <span>{{ jenis.jumlah_lunas }}/{{ jenis.jumlah_tagihan }} lunas</span>
+                </p>
+              </RouterLink>
+            </li>
+          </ul>
+          <p v-if="data.simpanan.per_jenis.every((j) => j.jumlah_tagihan === 0)" class="mt-4 text-xs text-muted-foreground">
+            Belum ada tagihan untuk periode ini.
+          </p>
+        </section>
+      </div>
+
+      <!-- Daftar -->
+      <div v-if="data.simpanan || data.anggota" class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <section v-if="data.simpanan" class="rounded-xl border border-border bg-card" aria-labelledby="tunggakan-judul">
+          <header class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+            <div>
+              <h2 id="tunggakan-judul" class="text-base font-semibold text-foreground">Tagihan belum lunas terlama</h2>
+              <p class="mt-0.5 text-sm text-muted-foreground">Diurutkan dari jatuh tempo paling awal</p>
+            </div>
+          </header>
+          <ul v-if="data.simpanan.tagihan_terlama.length" class="divide-y divide-border">
+            <li v-for="t in data.simpanan.tagihan_terlama" :key="t.id">
+              <RouterLink :to="`/simpanan/${t.jenis}`" class="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-muted/50">
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-foreground">{{ t.anggota || 'Anggota tidak ditemukan' }}</p>
+                  <p class="mt-0.5 text-xs capitalize text-muted-foreground">Simpanan {{ t.jenis }} · {{ formatPeriode(t.periode) }}</p>
+                </div>
+                <div class="shrink-0 text-right">
+                  <p class="text-sm font-medium tabular-nums text-foreground">{{ formatRupiah(t.nominal) }}</p>
+                  <p
+                    class="mt-0.5 flex items-center justify-end gap-1 text-xs"
+                    :class="t.lewat_jatuh_tempo ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'"
+                  >
+                    <TriangleAlert v-if="t.lewat_jatuh_tempo" class="h-3 w-3 shrink-0" />
+                    <span class="whitespace-nowrap">{{ t.lewat_jatuh_tempo ? 'Terlambat' : 'Tempo' }} · {{ formatTanggal(t.jatuh_tempo) }}</span>
+                  </p>
+                </div>
+              </RouterLink>
+            </li>
+          </ul>
+          <div v-else class="flex items-center gap-3 px-5 py-8 text-sm text-muted-foreground">
+            <CircleCheck class="h-5 w-5 text-green-600" />
+            Semua tagihan sudah lunas.
+          </div>
+        </section>
+
+        <section v-if="data.anggota" class="rounded-xl border border-border bg-card" aria-labelledby="anggota-judul">
+          <header class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+            <div>
+              <h2 id="anggota-judul" class="text-base font-semibold text-foreground">Anggota terbaru</h2>
+              <p class="mt-0.5 text-sm text-muted-foreground">{{ formatAngka(data.anggota.total) }} anggota terdaftar</p>
+            </div>
+            <RouterLink to="/members" class="text-sm font-medium text-green-700 hover:underline dark:text-green-400">Lihat semua</RouterLink>
+          </header>
+          <ul v-if="data.anggota.terbaru.length" class="divide-y divide-border">
+            <li v-for="a in data.anggota.terbaru" :key="a.id">
+              <RouterLink :to="`/members/${a.id}`" class="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/50">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                  {{ inisial(a.nama) }}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-foreground">{{ a.nama }}</p>
+                  <p class="mt-0.5 text-xs text-muted-foreground">{{ a.kode }} · bergabung {{ formatTanggal(a.tanggal_bergabung) }}</p>
+                </div>
+                <span
+                  class="rounded-full px-2 py-0.5 text-xs font-medium"
+                  :class="a.status === 'aktif' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-muted text-muted-foreground'"
+                >
+                  {{ a.status === 'aktif' ? 'Aktif' : 'Nonaktif' }}
+                </span>
+              </RouterLink>
+            </li>
+          </ul>
+          <div v-else class="px-5 py-8 text-sm text-muted-foreground">Belum ada anggota.</div>
+        </section>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted, ref, type Component } from 'vue'
+import { RouterLink } from 'vue-router'
 import {
+  BookText,
+  CircleAlert,
+  CircleCheck,
+  FileClock,
+  LayoutDashboard,
+  PiggyBank,
+  ReceiptText,
   RefreshCw,
-  Download,
-  TrendingUp,
-  TrendingDown,
-  BarChart3,
+  TriangleAlert,
   UserPlus,
-  CreditCard,
-  FileText,
-  Calculator
+  Users,
+  Wallet
 } from 'lucide-vue-next'
-import { useDarkModeStore, useDashboardStore } from '@/stores'
-import Button from '@/components/ui/Button.vue'
-import Card from '@/components/ui/Card.vue'
-import CardContent from '@/components/ui/CardContent.vue'
-import Badge from '@/components/ui/Badge.vue'
-import Avatar from '@/components/ui/Avatar.vue'
-import AvatarFallback from '@/components/ui/AvatarFallback.vue'
+import { useUserStore } from '@/stores'
+import { ringkasanService, type RingkasanDashboard } from '@/services/dashboardService'
+import { formatAngka, formatPeriode, formatRupiah, formatRupiahRingkas, formatTanggal } from '@/lib/format'
+import StatTile from '@/components/dashboard/StatTile.vue'
+import TrenSimpananChart from '@/components/dashboard/TrenSimpananChart.vue'
 
-const darkModeStore = useDarkModeStore()
-const dashboardStore = useDashboardStore()
+const userStore = useUserStore()
 
-const quickActions = [
-  { name: 'Add Member', icon: UserPlus, action: 'add-member' },
-  { name: 'New Account', icon: CreditCard, action: 'new-account' },
-  { name: 'Generate Report', icon: FileText, action: 'generate-report' },
-  { name: 'Loan Calculator', icon: Calculator, action: 'loan-calculator' }
-]
+const data = ref<RingkasanDashboard | null>(null)
+const memuat = ref(false)
+const galat = ref<string | null>(null)
 
-const getActivityColor = (type: string) => {
-  const colors = {
-    deposit: 'bg-green-500 text-white',
-    withdrawal: 'bg-orange-500 text-white',
-    loan: 'bg-green-600 text-white',
-    payment: 'bg-purple-500 text-white',
-    account: 'bg-green-400 text-white'
-  }
-  return colors[type as keyof typeof colors] || 'bg-gray-500 text-white'
-}
+const sekarang = new Date()
+const hariIni = sekarang.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+const salam = (() => {
+  const jam = sekarang.getHours()
+  if (jam < 11) return 'Selamat pagi'
+  if (jam < 15) return 'Selamat siang'
+  if (jam < 18) return 'Selamat sore'
+  return 'Selamat malam'
+})()
+const namaDepan = computed(() => userStore.user.name.split(/\s+/)[0] || 'Pengguna')
 
-const getActivityIcon = (type: string) => {
-  const icons = {
-    deposit: '↓',
-    withdrawal: '↑',
-    loan: '💼',
-    payment: '💳',
-    account: '👤'
-  }
-  return icons[type as keyof typeof icons] || '•'
-}
+const inisial = (nama: string) =>
+  nama.split(/\s+/).filter(Boolean).slice(0, 2).map((k) => k[0]?.toUpperCase()).join('')
 
-const handleQuickAction = (action: string) => {
-  // Handle quick actions
-  console.log('Quick action:', action)
-  // You can add router navigation or modal opening here
-}
+const persenJenis = (j: { ditagih: number; terkumpul: number }) =>
+  j.ditagih > 0 ? Math.round((j.terkumpul / j.ditagih) * 100) : 0
 
-onMounted(() => {
-  // Initialize any dashboard data if needed
+// Aksi cepat hanya untuk menu yang boleh diakses user.
+const aksiCepat = computed(() => {
+  const simpananPertama = (['pokok', 'wajib', 'sukarela'] as const).find((j) => userStore.can(`simpanan.${j}`))
+  return [
+    userStore.can('anggota') && { to: '/members/add', label: 'Tambah anggota', icon: UserPlus },
+    simpananPertama && { to: `/simpanan/${simpananPertama}`, label: 'Buat tagihan', icon: ReceiptText },
+    userStore.can('akuntansi.jurnal-umum') && { to: '/akuntansi/jurnal-umum', label: 'Jurnal umum', icon: BookText }
+  ].filter(Boolean) as { to: string; label: string; icon: Component }[]
 })
+
+// Kelas ditulis utuh (bukan disusun dinamis) supaya terdeteksi Tailwind saat build.
+const KOLOM_TILE: Record<number, string> = { 1: 'xl:grid-cols-1', 2: 'xl:grid-cols-2', 3: 'xl:grid-cols-3', 4: 'xl:grid-cols-4' }
+
+type Tile = { label: string; value: string; icon: Component; to?: string; sub: string; subIcon?: Component; subClass?: string }
+
+const tiles = computed<Tile[]>(() => {
+  const d = data.value
+  if (!d) return []
+  const hasil: Tile[] = []
+
+  if (d.anggota) {
+    hasil.push({
+      label: 'Anggota aktif',
+      value: formatAngka(d.anggota.aktif),
+      icon: Users,
+      to: '/members',
+      sub: `${formatAngka(d.anggota.baru_bulan_ini)} bergabung bulan ini · ${formatAngka(d.anggota.total)} total`
+    })
+  }
+
+  if (d.simpanan) {
+    const ditagih = d.simpanan.per_jenis.reduce((n, j) => n + j.ditagih, 0)
+    const terkumpul = d.simpanan.per_jenis.reduce((n, j) => n + j.terkumpul, 0)
+    hasil.push({
+      label: 'Simpanan terkumpul',
+      value: formatRupiahRingkas(terkumpul),
+      icon: PiggyBank,
+      sub: ditagih > 0
+        ? `${Math.round((terkumpul / ditagih) * 100)}% dari ${formatRupiahRingkas(ditagih)} · ${formatPeriode(d.periode)}`
+        : `Belum ada tagihan ${formatPeriode(d.periode)}`
+    })
+
+    const { jumlah, nominal, jatuh_tempo } = d.simpanan.belum_lunas
+    hasil.push({
+      label: 'Tagihan belum lunas',
+      value: formatRupiahRingkas(nominal),
+      icon: Wallet,
+      sub: jatuh_tempo > 0
+        ? `${formatAngka(jatuh_tempo)} lewat jatuh tempo · ${formatAngka(jumlah)} tagihan`
+        : `${formatAngka(jumlah)} tagihan · tidak ada yang lewat jatuh tempo`,
+      // Status selalu disertai ikon + label, tidak hanya warna.
+      subIcon: jatuh_tempo > 0 ? TriangleAlert : undefined,
+      subClass: jatuh_tempo > 0 ? 'text-red-600 dark:text-red-400' : undefined
+    })
+  }
+
+  if (d.akuntansi) {
+    const a = d.akuntansi
+    hasil.push({
+      label: 'Jurnal belum diposting',
+      value: a.periode_aktif ? formatAngka(a.jurnal_draft ?? 0) : '—',
+      icon: FileClock,
+      to: userStore.can('akuntansi.jurnal-umum') ? '/akuntansi/jurnal-umum' : undefined,
+      sub: a.periode_aktif
+        ? `${formatAngka(a.jurnal_terposting ?? 0)} terposting · saldo awal ${a.saldo_awal_terverifikasi ? 'terverifikasi' : 'belum diverifikasi'}`
+        : 'Belum ada buku periode aktif'
+    })
+  }
+
+  return hasil
+})
+
+const muat = async () => {
+  memuat.value = true
+  galat.value = null
+  try {
+    data.value = await ringkasanService.ringkasan()
+  } catch (err: any) {
+    galat.value = err?.message || 'Terjadi kesalahan'
+  } finally {
+    memuat.value = false
+  }
+}
+
+onMounted(muat)
 </script>
+
+<style scoped>
+@reference "../assets/main.css";
+
+.btn-sekunder {
+  @apply inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600/40 disabled:opacity-60;
+}
+</style>

@@ -94,3 +94,48 @@ export const dashboardService = {
     return apiService.get('/dashboard/alerts')
   },
 }
+
+// ---------------------------------------------------------------------------
+// Ringkasan dashboard koperasi (GET /dashboard/ringkasan). Tiap bagian null bila
+// user tidak punya hak akses ke menu sumbernya.
+// ---------------------------------------------------------------------------
+
+export type JenisSimpanan = 'pokok' | 'wajib' | 'sukarela'
+
+export interface RingkasanDashboard {
+  /** Periode berjalan, format YYYY-MM. */
+  periode: string
+  anggota: {
+    total: number
+    aktif: number
+    baru_bulan_ini: number
+    terbaru: { id: number; kode: string; nama: string; tanggal_bergabung: string | null; status: 'aktif' | 'nonaktif' }[]
+  } | null
+  simpanan: {
+    jenis: JenisSimpanan[]
+    tren: { periode: string; lunas: number; belum_lunas: number }[]
+    per_jenis: { jenis: JenisSimpanan; jumlah_tagihan: number; jumlah_lunas: number; ditagih: number; terkumpul: number }[]
+    belum_lunas: { jumlah: number; nominal: number; jatuh_tempo: number }
+    tagihan_terlama: {
+      id: number
+      jenis: JenisSimpanan
+      periode: string
+      nominal: number
+      jatuh_tempo: string | null
+      lewat_jatuh_tempo: boolean
+      anggota: string | null
+    }[]
+  } | null
+  akuntansi: {
+    periode_aktif: { id: number; tahun: number; is_closed: boolean } | null
+    jurnal_draft?: number
+    jurnal_terposting?: number
+    saldo_awal_terverifikasi?: boolean
+  } | null
+}
+
+export const ringkasanService = {
+  async ringkasan(): Promise<RingkasanDashboard> {
+    return apiService.get<RingkasanDashboard>('/dashboard/ringkasan')
+  }
+}

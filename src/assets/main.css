@@ -79,7 +79,8 @@ select option {
 * {
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
+  /* 300ms membuat hover & ganti tema terasa "berat"; 150ms tetap halus tapi responsif. */
+  transition-duration: 150ms;
 }
 
 /* Custom scrollbar */

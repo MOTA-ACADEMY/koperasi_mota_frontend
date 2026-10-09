@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-full items-center justify-center p-6">
+  <div class="flex items-center justify-center px-6 py-20">
     <div class="max-w-md text-center">
       <span class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
         <ShieldAlert class="h-7 w-7" />

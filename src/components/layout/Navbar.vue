@@ -1,142 +1,127 @@
 <template>
-  <nav :class="[
-    'fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-300',
-    darkModeStore.themeClasses.navbar,
-    'border-b',
-    darkModeStore.isDarkMode ? 'border-gray-700' : 'border-gray-200'
-  ]">
-    <div class="flex items-center justify-between h-full px-6">
-      <!-- Left side - Logo and Title -->
-      <div class="flex items-center space-x-4">
-        <!-- Sidebar Toggle Button -->
-        <Button
-          variant="ghost"
-          size="sm"
-          @click="sidebarStore.toggleSidebar"
-          class="p-2 hover:scale-110 transition-all duration-300 hidden md:flex text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
-        >
-          <Menu v-if="!sidebarStore.isCollapsed" class="h-5 w-5" />
-          <Menu v-else class="h-5 w-5" />
-        </Button>
-        
-        <div class="flex items-center space-x-3">
-          <Avatar class="h-8 w-8">
-            <AvatarFallback class="bg-green-600 text-white font-bold text-sm">KM</AvatarFallback>
-          </Avatar>
-          <h1 class="text-xl font-bold transition-colors duration-300 text-green-700 dark:text-green-400">
-            Koperasi Mota
-          </h1>
-        </div>
-        <!-- Koperasi aktif — klik untuk pindah koperasi -->
-        <RouterLink
-          v-if="userStore.koperasi"
-          to="/pilih-koperasi"
-          :title="userStore.koperasiList.length > 1 ? 'Ganti koperasi' : userStore.koperasi.nama"
-          class="hidden sm:inline-flex items-center gap-1.5 max-w-[16rem] rounded-full border border-green-600 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors"
-        >
-          <Building2 class="h-3.5 w-3.5 shrink-0" />
-          <span class="truncate">{{ userStore.koperasi.nama }}</span>
-          <ChevronsUpDown v-if="userStore.koperasiList.length > 1" class="h-3.5 w-3.5 shrink-0 opacity-70" />
-        </RouterLink>
-      </div>
+  <header class="fixed inset-x-0 top-0 z-40 h-16 border-b border-border bg-card">
+    <div class="flex h-full items-center gap-2 px-3 sm:px-4">
+      <!-- Satu tombol: mobile = buka drawer, desktop = ciutkan/lebarkan sidebar -->
+      <button
+        type="button"
+        class="icon-btn"
+        :aria-label="labelToggle"
+        :aria-expanded="isMobile ? mobileMenuOpen : !sidebarStore.isCollapsed"
+        @click="toggleSidebar"
+      >
+        <Menu class="h-5 w-5 md:hidden" />
+        <PanelLeftClose v-if="!sidebarStore.isCollapsed" class="hidden h-5 w-5 md:block" />
+        <PanelLeftOpen v-else class="hidden h-5 w-5 md:block" />
+      </button>
 
-      <!-- Right side - Actions -->
-      <div class="flex items-center space-x-3">
-        <!-- Notifications -->
-        <Button
-          variant="ghost"
-          size="sm"
-          class="relative p-2 hover:scale-110 transition-all duration-300 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
-        >
-          <Bell class="h-5 w-5" />
-          <span class="absolute -top-0.5 -right-0.5 h-4 w-4 bg-green-500 rounded-full text-[10px] text-white flex items-center justify-center font-semibold leading-none">
-            3
-          </span>
-        </Button>
+      <RouterLink to="/dashboard" class="flex shrink-0 items-center gap-2.5 rounded-lg px-1 py-1">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600 text-white shadow-sm">
+          <Handshake class="h-[18px] w-[18px]" />
+        </span>
+        <span class="hidden text-base font-semibold tracking-tight text-foreground sm:inline">Koperasi Mota</span>
+      </RouterLink>
 
-        <!-- Dark Mode Toggle -->
-        <Button
-          variant="ghost"
-          size="sm"
+      <!-- Koperasi aktif (di layar kecil tampil di bawah sidebar) -->
+      <RouterLink
+        v-if="userStore.koperasi"
+        to="/pilih-koperasi"
+        :title="userStore.koperasiList.length > 1 ? 'Ganti koperasi' : userStore.koperasi.nama"
+        class="ml-2 hidden min-w-0 max-w-[18rem] items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-sm text-foreground transition-colors hover:bg-muted md:inline-flex"
+      >
+        <Building2 class="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+        <span class="truncate font-medium">{{ userStore.koperasi.nama }}</span>
+        <ChevronsUpDown v-if="userStore.koperasiList.length > 1" class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      </RouterLink>
+
+      <div class="ml-auto flex items-center gap-1">
+        <button
+          type="button"
+          class="icon-btn"
+          :aria-label="darkModeStore.isDarkMode ? 'Gunakan mode terang' : 'Gunakan mode gelap'"
+          :title="darkModeStore.isDarkMode ? 'Mode terang' : 'Mode gelap'"
           @click="darkModeStore.toggleDarkMode"
-          class="p-2 hover:scale-110 transition-all duration-300 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
         >
-          <Moon v-if="!darkModeStore.isDarkMode" class="h-5 w-5" />
-          <Sun v-else class="h-5 w-5" />
-        </Button>
+          <Sun v-if="darkModeStore.isDarkMode" class="h-5 w-5" />
+          <Moon v-else class="h-5 w-5" />
+        </button>
 
-        <!-- Settings -->
-        <Button
-          variant="ghost"
-          size="sm"
-          class="p-2 hover:scale-110 transition-all duration-300 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
-        >
-          <Settings class="h-5 w-5" />
-        </Button>
+        <!-- Menu pengguna -->
+        <div ref="menuRoot" class="relative ml-1">
+          <button
+            type="button"
+            class="flex items-center gap-2.5 rounded-lg p-1 pr-1.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600/40"
+            aria-haspopup="menu"
+            :aria-expanded="menuOpen"
+            @click="menuOpen = !menuOpen"
+          >
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-800 dark:bg-green-900/50 dark:text-green-300">
+              {{ inisial }}
+            </span>
+            <span class="hidden text-left leading-tight lg:block">
+              <span class="block max-w-[10rem] truncate text-sm font-medium text-foreground">{{ userStore.user.name }}</span>
+              <span class="block max-w-[10rem] truncate text-xs text-muted-foreground">{{ userStore.roleLabel || 'Pengguna' }}</span>
+            </span>
+            <ChevronDown class="hidden h-4 w-4 text-muted-foreground lg:block" />
+          </button>
 
-        <!-- User Profile -->
-        <div class="flex items-center space-x-2">
-          <Avatar class="h-8 w-8 cursor-pointer hover:scale-110 transition-all duration-300">
-            <!-- <AvatarImage src="/user-avatar.jpg" alt="User" /> -->
-            <AvatarFallback class="font-semibold text-sm">
-              <CircleUser class="h-4 w-4 text-green-100 dark:text-green-900" />
-            </AvatarFallback>
-          </Avatar>
-          <div class="hidden lg:block">
-            <p class="text-sm font-medium text-green-700 dark:text-green-400">
-              {{ userStore.fullUserInfo.displayName }}
-            </p>
-            <p class="text-xs text-green-600 dark:text-green-500">
-              {{ userStore.roleLabel }}
-            </p>
-          </div>
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="opacity-0 -translate-y-1"
+            leave-active-class="transition duration-75 ease-in"
+            leave-to-class="opacity-0 -translate-y-1"
+          >
+            <div
+              v-if="menuOpen"
+              role="menu"
+              class="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
+            >
+              <div class="border-b border-border px-4 py-3">
+                <p class="truncate text-sm font-medium text-foreground">{{ userStore.user.name }}</p>
+                <p class="truncate text-xs text-muted-foreground">{{ userStore.user.email }}</p>
+                <p v-if="userStore.roleLabel" class="mt-1.5 truncate text-xs text-green-700 dark:text-green-400">
+                  {{ userStore.roleLabel }} · {{ userStore.koperasi?.nama }}
+                </p>
+              </div>
+              <div class="p-1.5">
+                <RouterLink to="/pilih-koperasi" role="menuitem" class="menu-item" @click="menuOpen = false">
+                  <Building2 class="h-4 w-4" />
+                  {{ userStore.koperasiList.length > 1 ? 'Ganti koperasi' : 'Koperasi saya' }}
+                </RouterLink>
+                <button type="button" role="menuitem" class="menu-item text-red-600 dark:text-red-400" @click="handleLogout">
+                  <LogOut class="h-4 w-4" />
+                  Keluar
+                </button>
+              </div>
+            </div>
+          </Transition>
         </div>
-
-        <!-- Logout -->
-        <Button
-          variant="ghost"
-          size="sm"
-          @click="handleLogout"
-          class="p-2 hover:scale-110 transition-all duration-300 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
-        >
-          <LogOut class="h-5 w-5" />
-        </Button>
-
-        <!-- Mobile Menu Button -->
-        <Button
-          variant="ghost"
-          size="sm"
-          class="md:hidden p-2 hover:scale-110 transition-all duration-300 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
-          @click="$emit('toggle-mobile-menu')"
-        >
-          <Menu class="h-5 w-5" />
-        </Button>
       </div>
     </div>
-  </nav>
+  </header>
 </template>
 
 <script setup lang="ts">
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import {
-  Bell,
-  Settings,
-  Moon,
-  Sun,
+  Building2,
+  ChevronDown,
+  ChevronsUpDown,
+  Handshake,
+  LogOut,
   Menu,
+  Moon,
   PanelLeftClose,
   PanelLeftOpen,
-  CircleUser,
-  LogOut,
-  Building2,
-  ChevronsUpDown
+  Sun
 } from 'lucide-vue-next'
-import { useRouter, RouterLink } from 'vue-router'
 import { useDarkModeStore, useUserStore, useSidebarStore } from '@/stores'
-import Button from '@/components/ui/Button.vue'
-import Avatar from '@/components/ui/Avatar.vue'
-import AvatarFallback from '@/components/ui/AvatarFallback.vue'
 
-defineEmits<{
+const props = defineProps<{
+  mobileMenuOpen: boolean
+}>()
+
+const emit = defineEmits<{
   'toggle-mobile-menu': []
 }>()
 
@@ -145,8 +130,71 @@ const darkModeStore = useDarkModeStore()
 const userStore = useUserStore()
 const sidebarStore = useSidebarStore()
 
+const menuOpen = ref(false)
+const menuRoot = ref<HTMLElement | null>(null)
+const isMobile = ref(typeof window !== 'undefined' && window.innerWidth < 768)
+
+const inisial = computed(() =>
+  (userStore.user.name || '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((kata) => kata[0]?.toUpperCase())
+    .join('')
+)
+
+const labelToggle = computed(() => {
+  if (isMobile.value) return props.mobileMenuOpen ? 'Tutup menu' : 'Buka menu'
+  return sidebarStore.isCollapsed ? 'Lebarkan sidebar' : 'Ciutkan sidebar'
+})
+
+const toggleSidebar = () => {
+  if (window.innerWidth < 768) {
+    emit('toggle-mobile-menu')
+  } else {
+    sidebarStore.toggleSidebar()
+  }
+}
+
 const handleLogout = async () => {
+  menuOpen.value = false
   await userStore.logout()
   router.push('/login')
 }
+
+const onClickOutside = (event: MouseEvent) => {
+  if (menuOpen.value && menuRoot.value && !menuRoot.value.contains(event.target as Node)) {
+    menuOpen.value = false
+  }
+}
+const onKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') menuOpen.value = false
+}
+const onResize = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  document.addEventListener('click', onClickOutside)
+  document.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', onResize)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onClickOutside)
+  document.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', onResize)
+})
 </script>
+
+<style scoped>
+@reference "../../assets/main.css";
+
+.icon-btn {
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600/40;
+}
+
+.menu-item {
+  @apply flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted;
+}
+</style>

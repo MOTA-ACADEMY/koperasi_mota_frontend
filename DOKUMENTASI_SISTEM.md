@@ -115,7 +115,7 @@ anaknya ditulis absolut (`/members`, `/akuntansi/...`), jadi URL-nya tidak beraw
 | `/daftar` | auth/RegisterKoperasiView | ✅ daftar koperasi baru |
 | `/pilih-koperasi` | auth/PilihKoperasiView | ✅ pilih / pindah koperasi |
 | `/koperasi/profil`, `/koperasi/pengguna` | koperasi/* | ✅ profil & pengguna koperasi (admin) |
-| `/dashboard` | DashboardView | ⚠ data mock (`stores/dashboard.ts`) |
+| `/dashboard` | DashboardView | ✅ ringkasan nyata dari `GET /dashboard/ringkasan` (bagian disaring sesuai hak akses) |
 | `/members`, `/members/add`, `/members/:id` | master-data/members | ✅ |
 | `/kolektor`, `/kolektor/tambah`, `/kolektor/:id/edit` | master-data/kolektor | ✅ |
 | `/simpanan/pokok`, `/simpanan/wajib`, `/simpanan/sukarela` | simpanan/* | ✅ |
@@ -224,3 +224,9 @@ Temuan saat membaca kode — **belum diubah**, hanya dicatat:
     bertema Tailwind, bukan `Input`/`Button` bawaan, karena komponen itu mengabaikan `class` (butir 12).
     Chip "Akun demo" di halaman login hanya tampil saat `npm run dev`; datanya dikondisikan pada
     `import.meta.env.DEV` sehingga tidak ikut ke bundel produksi (sudah dicek tidak ada di `dist`).
+15. **Shell & dashboard** (Navbar, Sidebar, DashboardLayout, DashboardView) ditulis ulang dengan elemen
+    native + kelas Tailwind (bukan `Button`/`Card` bawaan yang mengabaikan `class`). `BottomBar` dan data
+    mock dashboard (`stores/dashboard.ts`, masih dipakai halaman demo lain) tidak dipakai lagi.
+    Grafik tagihan simpanan (`components/dashboard/TrenSimpananChart.vue`) memakai palet yang divalidasi:
+    hijau `#16a34a` untuk terkumpul, abu-abu de-emphasis untuk belum lunas, dengan legenda + tampilan tabel.
+    Transisi warna global di `main.css` dipersingkat ke 150ms; efek `hover:scale` di shell dihapus.
