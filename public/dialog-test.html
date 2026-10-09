@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dialog Test</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .dialog-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 90%;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .close-btn {
+      background: #6b7280;
+      float: right;
+    }
+    .close-btn:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>Dialog Test - Only One Dialog Should Show</h1>
+    <p>Click multiple buttons quickly to test that only one dialog appears at a time:</p>
+    
+    <button onclick="openDialog('dialog1')">Open Dialog 1</button>
+    <button onclick="openDialog('dialog2')">Open Dialog 2</button>
+    <button onclick="openDialog('dialog3')">Open Dialog 3</button>
+    
+    <div id="status"></div>
+  </div>
+
+  <!-- Dialog 1 -->
+  <div id="dialog1" class="dialog-overlay hidden">
+    <div class="dialog-content">
+      <button class="close-btn" onclick="closeDialog('dialog1')">×</button>
+      <h2>Dialog 1</h2>
+      <p>This is the first dialog.</p>
+      <button onclick="closeDialog('dialog1')">Close</button>
+    </div>
+  </div>
+
+  <!-- Dialog 2 -->
+  <div id="dialog2" class="dialog-overlay hidden">
+    <div class="dialog-content">
+      <button class="close-btn" onclick="closeDialog('dialog2')">×</button>
+      <h2>Dialog 2</h2>
+      <p>This is the second dialog.</p>
+      <button onclick="closeDialog('dialog2')">Close</button>
+    </div>
+  </div>
+
+  <!-- Dialog 3 -->
+  <div id="dialog3" class="dialog-overlay hidden">
+    <div class="dialog-content">
+      <button class="close-btn" onclick="closeDialog('dialog3')">×</button>
+      <h2>Dialog 3</h2>
+      <p>This is the third dialog.</p>
+      <button onclick="closeDialog('dialog3')">Close</button>
+    </div>
+  </div>
+
+  <script>
+    let activeDialog = null;
+
+    function closeAllDialogs() {
+      document.querySelectorAll('.dialog-overlay').forEach(dialog => {
+        dialog.classList.add('hidden');
+      });
+      document.body.style.overflow = '';
+      activeDialog = null;
+      updateStatus();
+    }
+
+    function openDialog(dialogId) {
+      // Close any existing dialog first
+      closeAllDialogs();
+      
+      // Open the new dialog
+      const dialog = document.getElementById(dialogId);
+      if (dialog) {
+        dialog.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        activeDialog = dialogId;
+        updateStatus();
+      }
+    }
+
+    function closeDialog(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      if (dialog) {
+        dialog.classList.add('hidden');
+        document.body.style.overflow = '';
+        activeDialog = null;
+        updateStatus();
+      }
+    }
+
+    function updateStatus() {
+      const status = document.getElementById('status');
+      if (activeDialog) {
+        status.innerHTML = `<p><strong>Active Dialog:</strong> ${activeDialog}</p>`;
+      } else {
+        status.innerHTML = '<p><strong>No active dialog</strong></p>';
+      }
+    }
+
+    // Close dialog when clicking outside
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('dialog-overlay')) {
+        closeAllDialogs();
+      }
+    });
+
+    // Close dialog with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && activeDialog) {
+        closeAllDialogs();
+      }
+    });
+
+    // Initialize status
+    updateStatus();
+  </script>
+</body>
+</html>
