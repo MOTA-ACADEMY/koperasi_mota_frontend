@@ -191,6 +191,23 @@ const router = createRouter({
           ]
         },
         {
+          path: '/penagihan',
+          children: [
+            {
+              path: '',
+              name: 'penagihan-lapangan',
+              component: () => import('../views/penagihan/LapanganView.vue'),
+              meta: { menu: 'penagihan.lapangan' }
+            },
+            {
+              path: 'setoran',
+              name: 'penagihan-setoran',
+              component: () => import('../views/penagihan/SetoranView.vue'),
+              meta: { menu: 'penagihan.setoran' }
+            }
+          ]
+        },
+        {
           path: '/components',
           name: 'components',
           component: () => import('../views/ComponentsDemo.vue') // Placeholder

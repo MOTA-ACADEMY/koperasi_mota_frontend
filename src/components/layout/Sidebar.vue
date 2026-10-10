@@ -113,8 +113,17 @@ const userStore = useUserStore()
 
 const collapsed = computed(() => sidebarStore.isCollapsed)
 
-// Aktif juga untuk sub-halaman, mis. /members/add dan /members/12 di bawah menu Anggota.
-const aktif = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
+const cocok = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
+
+// Aktif juga untuk sub-halaman (mis. /members/12 di bawah Anggota). Bila beberapa menu cocok
+// (/penagihan & /penagihan/setoran), hanya path terpanjang yang ditandai aktif.
+const pathAktif = computed(() =>
+  navigationStore.navigationItems
+    .map((item) => item.path)
+    .filter((path): path is string => !!path && cocok(path))
+    .sort((a, b) => b.length - a.length)[0] ?? null
+)
+const aktif = (path: string) => path === pathAktif.value
 </script>
 
 <style scoped>

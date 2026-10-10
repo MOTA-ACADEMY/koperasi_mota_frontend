@@ -119,12 +119,17 @@ anaknya ditulis absolut (`/members`, `/akuntansi/...`), jadi URL-nya tidak beraw
 | `/members`, `/members/add`, `/members/:id` | master-data/members | ✅ |
 | `/kolektor`, `/kolektor/tambah`, `/kolektor/:id/edit` | master-data/kolektor | ✅ |
 | `/simpanan/pokok`, `/simpanan/wajib`, `/simpanan/sukarela` | simpanan/* | ✅ |
+| `/penagihan` | penagihan/LapanganView | ✅ peta wilayah, GPS, tagih, kwitansi, setor (kolektor) / pantau (bendahara) |
+| `/penagihan/setoran` | penagihan/SetoranView | ✅ verifikasi / tolak setoran kolektor |
 | `/akuntansi/buku-periode` … `/akuntansi/jurnal-umum` (7 halaman) | akuntansi/* | ✅ |
 | `/accounts`, `/loans`, `/transactions`, `/reports`, `/branches`, `/staff`, `/calculator` | placeholder → DashboardView | ❌ belum dibuat |
 | `/components`, `/datatable-demo`, `/dialog-demo`, `/toast-demo`, `/api-examples`, dll. | demo | sisa template |
 
-Menu sidebar didefinisikan di `src/stores/navigation.ts` (`navigationItems`). Banyak item
-(Inventory, Revenue, Messages, Backup, dll.) belum punya route.
+Menu sidebar dibangun dari `menu` di sesi (tabel `rbac_menu` backend) lewat
+`navigationStore.setFromMenu`; ikon dipetakan di `src/lib/menuIcons.ts` (tambahkan di sana bila
+`MenuCatalog` backend memakai ikon baru). Menu aktif = path menu terpanjang yang cocok dengan URL,
+jadi `/penagihan/setoran` tidak ikut menandai `/penagihan`. Setiap route punya `meta.menu`
+yang dicek router guard.
 
 ## 6. Fitur per Modul
 
@@ -148,6 +153,29 @@ Menu sidebar didefinisikan di `src/stores/navigation.ts` (`navigationItems`). Ba
 - List tagihan per tipe (filter tahun/bulan di sisi klien), ubah status lunas/belum lunas, hapus.
 - Generate tagihan massal: pilih periode (tahun-bulan) + anggota aktif + nominal per anggota →
   `POST /simpanan/billings`. Tagihan yang sudah ada untuk periode tsb dilewati backend.
+
+### Penagihan (`/penagihan`, `/penagihan/setoran`)
+- **Penagihan Lapangan** (menu `penagihan.lapangan`, dipegang role sistem *Kolektor* yang otomatis
+  mengikuti Master Kolektor). Satu halaman untuk semua kegiatan kolektor:
+  - **Peta** (`components/penagihan/PetaPenagihan.vue`, Leaflet): poligon wilayah, titik anggota
+    berwarna sesuai status (merah lewat jatuh tempo, oranye ada tagihan, ungu sudah bayar menunggu
+    setoran, hijau bersih), dan posisi GPS kolektor. Daftar anggota di samping (ponsel: di bawah)
+    diurutkan status lalu jarak terdekat; ada pencarian & filter "hanya yang punya tagihan".
+  - Klik titik/daftar → panel (`PanelSheet.vue`: bottom sheet di ponsel, panel kanan di desktop)
+    berisi detail anggota (tanpa data KTP), tombol Telepon / WhatsApp / Rute (Google Maps),
+    tagihan pokok & wajib yang belum lunas, dan tombol **Tagih**.
+  - Tagih: centang tagihan (bisa beberapa bulan), ubah nominal untuk bayar sebagian → **kwitansi**
+    (bisa dikirim ke WA anggota). Lokasi GPS ikut tercatat.
+  - Tab **Uang dipegang** (batalkan kwitansi, *Setor ke bendahara*) dan **Riwayat setoran**.
+  - GPS (`composables/useGpsKolektor.ts`) hanya menyala selama halaman ini terbuka; posisi dikirim ke
+    `POST /penagihan/lokasi` paling sering 30 detik sekali. **Browser hanya memberi lokasi di HTTPS
+    (atau localhost)** — chip status di kanan atas menjelaskan bila izin ditolak / tidak aman.
+  - Pengguna dengan menu Setoran Kolektor (mis. admin/bendahara) masuk **mode pantau**: memilih
+    kolektor, melihat wilayah, tagihan & posisi terakhir kolektor, tanpa bisa mencatat pembayaran.
+- **Setoran Kolektor** (menu `penagihan.setoran`): ringkasan uang menunggu, filter status, detail
+  setoran beserta kwitansi & lokasi bayar, tombol *Uang Rp … sudah diterima* (verifikasi → tagihan
+  lunas + jurnal draft) atau *Tolak* (catatan wajib; kwitansi kembali ke kolektor).
+- Service: `services/penagihanService.ts`; helper warna/format: `lib/penagihan.ts`.
 
 ### Akuntansi (`/akuntansi/*`)
 | Halaman | Fungsi |
@@ -188,7 +216,8 @@ npm run build        # vue-tsc && vite build → dist/
 Backend (`php artisan serve`) dan MySQL harus sudah dinyalakan pemilik proyek agar API bisa diakses.
 
 Akun demo (dari `php artisan db:seed --class=DemoSeeder` di backend), password `demo12345`:
-`admin@demo.koperasi.test` (2 koperasi → diminta memilih) dan `staf@demo.koperasi.test` (1 koperasi).
+`admin@demo.koperasi.test` (2 koperasi → diminta memilih), `staf@demo.koperasi.test` (1 koperasi), dan
+`kolektor@demo.koperasi.test` (langsung ke Penagihan Lapangan; 3 anggota demo ada di wilayahnya).
 
 ## 9. Catatan Temuan / Hal yang Perlu Diperhatikan
 
