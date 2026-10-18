@@ -140,7 +140,10 @@ watch(barang, (b) => {
 <style scoped>
 @reference "../../assets/main.css";
 
-.masukan {
-  @apply h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-600/30;
+/* Dalam layer components supaya utility Tailwind (mis. text-red-600) tetap bisa menimpa. */
+@layer components {
+  .masukan {
+    @apply h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-600/30;
+  }
 }
 </style>

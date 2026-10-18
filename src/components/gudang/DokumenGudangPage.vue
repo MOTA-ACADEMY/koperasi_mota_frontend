@@ -1132,43 +1132,46 @@ onMounted(async () => {
 <style scoped>
 @reference "../../assets/main.css";
 
-.tombol-utama {
-  @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
-}
+/* Dalam layer components supaya utility Tailwind (mis. text-red-600) tetap bisa menimpa. */
+@layer components {
+  .tombol-utama {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
 
-.tombol-garis {
-  @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50;
-}
+  .tombol-garis {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50;
+  }
 
-.tombol-kecil {
-  @apply rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40;
-}
+  .tombol-kecil {
+    @apply rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40;
+  }
 
-.badge {
-  @apply inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium;
-}
+  .badge {
+    @apply inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium;
+  }
 
-.label {
-  @apply mb-1 block text-sm font-medium text-foreground;
-}
+  .label {
+    @apply mb-1 block text-sm font-medium text-foreground;
+  }
 
-.label-kecil {
-  @apply mb-1 block text-xs text-muted-foreground;
-}
+  .label-kecil {
+    @apply mb-1 block text-xs text-muted-foreground;
+  }
 
-.masukan {
-  @apply h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-600/30 disabled:opacity-60;
-}
+  .masukan {
+    @apply h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-600/30 disabled:opacity-60;
+  }
 
-.pilihan {
-  @apply h-10 rounded-lg border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted;
-}
+  .pilihan {
+    @apply h-10 rounded-lg border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted;
+  }
 
-.pilihan-aktif {
-  @apply border-green-600 bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-300;
-}
+  .pilihan-aktif {
+    @apply border-green-600 bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-300;
+  }
 
-.galat {
-  @apply mt-1 text-xs text-red-600 dark:text-red-400;
+  .galat {
+    @apply mt-1 text-xs text-red-600 dark:text-red-400;
+  }
 }
 </style>

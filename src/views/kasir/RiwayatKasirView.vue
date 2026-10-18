@@ -73,7 +73,7 @@
                 @keydown.enter="buka(s.id)"
               >
                 <td class="whitespace-nowrap px-4 py-3 font-medium text-foreground">{{ s.nomor }}</td>
-                <td class="px-4 py-3 text-foreground">{{ s.kasir || '—' }}</td>
+                <td class="whitespace-nowrap px-4 py-3 text-foreground">{{ s.kasir || '—' }}</td>
                 <td class="whitespace-nowrap px-4 py-3 text-muted-foreground">{{ formatWaktu(s.dibuka_at) }}</td>
                 <td class="whitespace-nowrap px-4 py-3 text-muted-foreground">{{ s.ditutup_at ? formatWaktu(s.ditutup_at) : '—' }}</td>
                 <td class="px-4 py-3 text-right tabular-nums text-foreground">{{ formatAngka(s.jumlah_transaksi) }}</td>

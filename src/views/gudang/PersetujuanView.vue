@@ -129,7 +129,10 @@ onMounted(muat)
 <style scoped>
 @reference "../../assets/main.css";
 
-.tombol-garis {
-  @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50;
+/* Dalam layer components supaya utility Tailwind (mis. text-red-600) tetap bisa menimpa. */
+@layer components {
+  .tombol-garis {
+    @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50;
+  }
 }
 </style>

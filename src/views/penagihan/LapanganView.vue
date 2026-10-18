@@ -933,15 +933,18 @@ onMounted(async () => {
 <style scoped>
 @reference "../../assets/main.css";
 
-.tombol-utama {
-  @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
-}
+/* Dalam layer components supaya utility Tailwind (mis. text-red-600) tetap bisa menimpa. */
+@layer components {
+  .tombol-utama {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
 
-.tombol-aksi {
-  @apply inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground transition-colors hover:bg-muted [&>svg]:shrink-0;
-}
+  .tombol-aksi {
+    @apply inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground transition-colors hover:bg-muted [&>svg]:shrink-0;
+  }
 
-.tombol-kecil {
-  @apply rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted;
+  .tombol-kecil {
+    @apply rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted;
+  }
 }
 </style>

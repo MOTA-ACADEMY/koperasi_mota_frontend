@@ -9,7 +9,7 @@
       <TriangleAlert class="mx-auto h-10 w-10 text-amber-500" />
       <p class="mt-3 font-medium text-foreground">Gagal memuat data kasir</p>
       <p class="mt-1 text-sm text-muted-foreground">{{ galatMuat }}</p>
-      <button type="button" class="tombol-aksi mx-auto mt-4 px-4" @click="muatSesi()">
+      <button type="button" class="tombol-aksi mx-auto mt-4 h-10 px-4" @click="muatSesi()">
         <RotateCcw class="h-4 w-4" /> Coba lagi
       </button>
     </div>
@@ -69,7 +69,7 @@
           </span>
         </p>
 
-        <button type="submit" class="tombol-utama mt-5 h-11 w-full" :disabled="modalAwal === null || membuka">
+        <button type="submit" class="tombol-utama inline-flex mt-5 h-11 w-full px-4 text-sm" :disabled="modalAwal === null || membuka">
           <Loader2 v-if="membuka" class="h-4 w-4 animate-spin" />
           <Store v-else class="h-4 w-4" />
           Buka Kasir<template v-if="modalAwal !== null"> · {{ formatRupiah(modalAwal) }}</template>
@@ -118,13 +118,13 @@
         </dl>
 
         <div class="flex shrink-0 gap-2">
-          <button type="button" class="tombol-aksi px-3" aria-label="Transaksi sesi ini" @click="bukaTransaksi">
+          <button type="button" class="tombol-aksi h-10 px-3" aria-label="Transaksi sesi ini" @click="bukaTransaksi">
             <ReceiptText class="h-4 w-4" />
             <span class="hidden sm:inline">Transaksi</span>
           </button>
           <button
             type="button"
-            class="tombol-aksi border-red-200 px-3 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
+            class="tombol-aksi h-10 border-red-200 px-3 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
             @click="bukaTutup"
           >
             <Lock class="h-4 w-4" /> Tutup Kasir
@@ -171,7 +171,7 @@
             </div>
           </div>
 
-          <div class="min-h-0 flex-1 p-3 sm:p-4 lg:overflow-y-auto">
+          <div class="min-h-0 flex-1 p-3 sm:p-4 lg:overflow-y-auto" data-gulir>
             <!-- Tab barang -->
             <template v-if="tab === 'barang'">
               <ul v-if="hasil.length" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
@@ -300,7 +300,7 @@
             </button>
           </header>
 
-          <ul v-if="keranjang.length" class="min-h-0 flex-1 divide-y divide-border lg:overflow-y-auto">
+          <ul v-if="keranjang.length" class="min-h-0 flex-1 divide-y divide-border lg:overflow-y-auto" data-gulir>
             <li
               v-for="b in keranjang"
               :id="`baris-${b.kunci}`"
@@ -324,7 +324,7 @@
                 <button
                   v-if="b.jenis === 'jasa' && jasaById(b.jasa_id)"
                   type="button"
-                  class="ikon-kecil"
+                  class="ikon-kecil hover:text-foreground"
                   :aria-label="`Ubah ${b.nama}`"
                   @click="ubahBarisJasa(b)"
                 >
@@ -375,9 +375,9 @@
               <span class="text-sm text-muted-foreground">Total</span>
               <span class="text-2xl font-bold tabular-nums text-foreground">{{ formatRupiah(total) }}</span>
             </div>
-            <button type="button" class="tombol-utama hidden h-12 w-full text-base lg:inline-flex" :disabled="!keranjang.length" @click="bukaBayar">
+            <button type="button" class="tombol-utama hidden h-12 w-full px-4 text-base lg:inline-flex" :disabled="!keranjang.length" @click="bukaBayar">
               <Wallet class="h-5 w-5" /> Bayar
-              <kbd class="ml-1 border-white/40 bg-white/10 text-white">F9</kbd>
+              <span class="ml-1 rounded border border-white/40 bg-white/10 px-1 font-mono text-[11px] font-medium">F9</span>
             </button>
           </footer>
         </section>
@@ -393,7 +393,7 @@
             <span class="block text-xs text-muted-foreground">{{ formatQty(jumlahItem) }} item · lihat keranjang</span>
             <span class="block truncate text-lg font-bold tabular-nums text-foreground">{{ formatRupiah(total) }}</span>
           </a>
-          <button type="button" class="tombol-utama h-11 px-6 text-base" @click="bukaBayar">
+          <button type="button" class="tombol-utama inline-flex h-11 px-6 text-base" @click="bukaBayar">
             <Wallet class="h-5 w-5" /> Bayar
           </button>
         </div>
@@ -487,7 +487,7 @@
       </form>
 
       <template v-if="formJasa" #footer>
-        <button type="submit" form="form-jasa" class="tombol-utama h-11 w-full" :disabled="!formJasaValid">
+        <button type="submit" form="form-jasa" class="tombol-utama inline-flex h-11 w-full px-4 text-sm" :disabled="!formJasaValid">
           <Plus class="h-4 w-4" /> {{ formJasa.kunciEdit ? 'Simpan perubahan' : 'Tambah ke keranjang' }}
         </button>
       </template>
@@ -602,14 +602,14 @@
 
       <template #footer>
         <div v-if="struk" class="grid grid-cols-2 gap-2">
-          <button type="button" class="tombol-aksi" @click="cetak(struk)">
+          <button type="button" class="tombol-aksi h-10 px-3" @click="cetak(struk)">
             <Printer class="h-4 w-4" /> Cetak
           </button>
-          <button ref="tombolBaruRef" type="button" class="tombol-utama" @click="transaksiBaru">
+          <button ref="tombolBaruRef" type="button" class="tombol-utama inline-flex h-10 px-4 text-sm" @click="transaksiBaru">
             Transaksi baru <ArrowRight class="h-4 w-4" />
           </button>
         </div>
-        <button v-else type="submit" form="form-bayar" class="tombol-utama h-12 w-full text-base" :disabled="!bisaBayar || membayar">
+        <button v-else type="submit" form="form-bayar" class="tombol-utama inline-flex h-12 w-full px-4 text-base" :disabled="!bisaBayar || membayar">
           <Loader2 v-if="membayar" class="h-5 w-5 animate-spin" />
           <template v-if="metode === 'tunai'">Simpan pembayaran</template>
           <template v-else>QRIS sudah diterima</template>
@@ -642,7 +642,7 @@
       </template>
 
       <template #footer>
-        <RouterLink to="/kasir/riwayat" class="tombol-aksi w-full">
+        <RouterLink to="/kasir/riwayat" class="tombol-aksi h-10 w-full px-3">
           <History class="h-4 w-4" /> Riwayat kasir
         </RouterLink>
       </template>
@@ -728,8 +728,8 @@
       </form>
 
       <template #footer>
-        <button v-if="hasilTutup" type="button" class="tombol-utama h-11 w-full" @click="selesaiTutup">Selesai</button>
-        <button v-else-if="!memuatTutup" type="submit" form="form-tutup" class="tombol-utama h-11 w-full" :disabled="uangFisik === null || menutup">
+        <button v-if="hasilTutup" type="button" class="tombol-utama inline-flex h-11 w-full px-4 text-sm" @click="selesaiTutup">Selesai</button>
+        <button v-else-if="!memuatTutup" type="submit" form="form-tutup" class="tombol-utama inline-flex h-11 w-full px-4 text-sm" :disabled="uangFisik === null || menutup">
           <Loader2 v-if="menutup" class="h-4 w-4 animate-spin" />
           <Lock v-else class="h-4 w-4" />
           Tutup Kasir
@@ -957,6 +957,16 @@ let urutanCari = 0
 
 const layarLebar = () => window.matchMedia('(min-width: 1024px)').matches
 
+/** Gulir wadah [data-gulir] (bukan halaman) agar elemen terlihat — dipakai di layar lebar. */
+const gulirDalam = (el: HTMLElement | null) => {
+  const wadah = el?.closest<HTMLElement>('[data-gulir]')
+  if (!el || !wadah) return
+  const r = el.getBoundingClientRect()
+  const w = wadah.getBoundingClientRect()
+  if (r.top < w.top) wadah.scrollTop -= w.top - r.top + 8
+  else if (r.bottom > w.bottom) wadah.scrollTop += r.bottom - w.bottom + 8
+}
+
 const fokusCari = (pilih = false) =>
   nextTick(() => {
     inputCariRef.value?.focus()
@@ -1034,7 +1044,11 @@ const geserSorot = (arah: 1 | -1) => {
     if (i === -1 || hasil.value[i].stok > 0) break
   }
   sorot.value = i >= 0 && hasil.value[i].stok > 0 ? i : sorot.value === -1 ? -1 : i
-  nextTick(() => document.getElementById(`hasil-${sorot.value}`)?.scrollIntoView({ block: 'nearest' }))
+  nextTick(() => {
+    const el = document.getElementById(`hasil-${sorot.value}`)
+    if (layarLebar()) gulirDalam(el)
+    else el?.scrollIntoView({ block: 'nearest' })
+  })
 }
 
 const pilihHasil = (r: BarangSatuanCari) => {
@@ -1106,7 +1120,7 @@ const formJasaValid = computed(() => {
 const fokusFormJasa = () =>
   nextTick(() => {
     const el = document.getElementById('no-pelanggan') ?? document.getElementById('nominal-jasa') ?? document.getElementById('qty-jasa')
-    el?.focus()
+    el?.focus({ preventScroll: true })
   })
 
 const bukaFormJasa = (j: Jasa) => {
@@ -1183,7 +1197,7 @@ const kilaukan = (kunci: string) => {
   sorotKeranjang.value = kunci
   window.clearTimeout(timerKilau)
   timerKilau = window.setTimeout(() => (sorotKeranjang.value = null), 900)
-  if (layarLebar()) nextTick(() => document.getElementById(`baris-${kunci}`)?.scrollIntoView({ block: 'nearest' }))
+  if (layarLebar()) nextTick(() => gulirDalam(document.getElementById(`baris-${kunci}`)))
 }
 
 const tambahBarang = (r: BarangSatuanCari) => {
@@ -1323,7 +1337,7 @@ const bukaBayar = () => {
 const pilihMetode = (m: 'tunai' | 'qris') => {
   metode.value = m
   galatBayar.value = ''
-  nextTick(() => (m === 'tunai' ? inputDibayarRef.value?.focus() : document.getElementById('ref-qris')?.focus()))
+  nextTick(() => (m === 'tunai' ? inputDibayarRef.value?.focus() : document.getElementById('ref-qris')?.focus({ preventScroll: true })))
 }
 
 const bayar = async () => {
@@ -1354,7 +1368,7 @@ const bayar = async () => {
     if (res.ringkasan) ringkasan.value = res.ringkasan
     keranjang.value = []
     kataKunci.value = ''
-    nextTick(() => tombolBaruRef.value?.focus())
+    nextTick(() => tombolBaruRef.value?.focus({ preventScroll: true }))
   } catch (e: any) {
     const pesan = pesanGalat(e, 'Gagal menyimpan transaksi')
     galatBayar.value = pesan
@@ -1542,12 +1556,13 @@ onBeforeUnmount(() => {
 <style scoped>
 @reference "../../assets/main.css";
 
+/* Ukuran & display ditaruh di elemen: kelas scoped lebih spesifik dari utilitas (hidden, h-*, px-*). */
 .tombol-utama {
-  @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
+  @apply items-center justify-center gap-2 rounded-lg bg-green-600 font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 .tombol-aksi {
-  @apply inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground transition-colors hover:bg-muted [&>svg]:shrink-0;
+  @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card text-sm font-medium text-foreground transition-colors hover:bg-muted [&>svg]:shrink-0;
 }
 
 .tombol-pilihan {
@@ -1559,7 +1574,7 @@ onBeforeUnmount(() => {
 }
 
 .ikon-kecil {
-  @apply -m-1 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  @apply -m-1 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted;
 }
 
 .stepper {
@@ -1606,6 +1621,7 @@ kbd {
     display: none !important;
   }
 
+  html:has(> body.cetak-struk),
   body.cetak-struk {
     background: #fff !important;
   }

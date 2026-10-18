@@ -31,7 +31,7 @@
         <ul class="space-y-1.5 text-sm">
           <li v-for="(it, i) in p.items" :key="i" class="flex items-start justify-between gap-3">
             <span class="min-w-0">
-              <span class="block text-foreground">{{ it.nama }}<template v-if="it.jenis === 'barang' && it.satuan"> <span class="text-muted-foreground">· {{ it.satuan }}</span></template></span>
+              <span class="block text-foreground">{{ it.nama }}<span v-if="it.jenis === 'barang' && it.satuan" class="ml-1 text-muted-foreground">· {{ it.satuan }}</span></span>
               <span class="block text-xs text-muted-foreground tabular-nums">
                 {{ formatQty(it.qty) }} × {{ formatRupiah(it.harga_jual) }}
                 <template v-if="it.no_pelanggan"> · No. {{ it.no_pelanggan }}</template>
@@ -52,7 +52,7 @@
 
         <!-- Aksi (hanya di layar kasir) -->
         <div v-if="(bisaBatal || bisaCetak) && batalId !== p.id" class="mt-3 flex flex-wrap justify-end gap-2">
-          <button v-if="bisaCetak" type="button" class="tombol-kecil" @click="$emit('cetak', p)">
+          <button v-if="bisaCetak" type="button" class="tombol-kecil text-foreground" @click="$emit('cetak', p)">
             <Printer class="h-3.5 w-3.5" /> Cetak struk
           </button>
           <button
@@ -77,7 +77,7 @@
           />
           <p class="text-xs text-muted-foreground">Stok barang dikembalikan dan transaksi tidak dihitung di ringkasan kasir.</p>
           <div class="flex justify-end gap-2">
-            <button type="button" class="tombol-kecil" :disabled="memprosesId === p.id" @click="batalId = null">Urungkan</button>
+            <button type="button" class="tombol-kecil text-foreground" :disabled="memprosesId === p.id" @click="batalId = null">Urungkan</button>
             <button
               type="button"
               class="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
@@ -131,7 +131,7 @@ const mintaBatal = async (id: number) => {
   batalId.value = id
   alasan.value = ''
   await nextTick()
-  document.getElementById(`alasan-${id}`)?.focus()
+  document.getElementById(`alasan-${id}`)?.focus({ preventScroll: true })
 }
 
 const ringkasItem = (p: Penjualan) =>
@@ -151,6 +151,7 @@ watch(
 @reference "../../assets/main.css";
 
 .tombol-kecil {
-  @apply inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40;
+  /* Warna teks di elemen (tombol batal berwarna merah). */
+  @apply inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40;
 }
 </style>

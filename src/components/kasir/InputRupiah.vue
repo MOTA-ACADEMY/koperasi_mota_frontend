@@ -72,7 +72,8 @@ const onInput = (e: Event) => {
 }
 
 defineExpose({
-  focus: () => el.value?.focus(),
+  // Input sering berada di panel yang sedang bergeser masuk — jangan ikut menggulir halaman.
+  focus: () => el.value?.focus({ preventScroll: true }),
   select: () => el.value?.select()
 })
 </script>

@@ -17,7 +17,7 @@
 
         <div>
           <label for="barang-kode" class="label">Kode <span class="font-normal text-muted-foreground">(opsional)</span></label>
-          <input id="barang-kode" v-model="form.kode" type="text" maxlength="30" placeholder="Otomatis, mis. BRG00001" class="isian font-mono" :class="kelasGalat('kode')" />
+          <input id="barang-kode" v-model="form.kode" type="text" maxlength="30" placeholder="Otomatis, mis. BRG00001" class="isian font-mono placeholder:font-sans" :class="kelasGalat('kode')" />
           <p v-if="errors.kode" class="pesan-galat">{{ errors.kode }}</p>
           <p v-else-if="!barang" class="mt-1 text-xs text-muted-foreground">Kosongkan agar dibuat otomatis.</p>
         </div>
@@ -149,7 +149,7 @@
                   type="text"
                   maxlength="50"
                   placeholder="Scan / ketik"
-                  class="isian font-mono"
+                  class="isian font-mono placeholder:font-sans"
                   :class="kelasGalat(`satuan.${i}.barcode`)"
                 />
                 <p v-if="errors[`satuan.${i}.barcode`]" class="pesan-galat">{{ errors[`satuan.${i}.barcode`] }}</p>
@@ -274,7 +274,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Info, Loader2, Plus, Trash2, TriangleAlert } from 'lucide-vue-next'
 import PanelSheet from '@/components/common/PanelSheet.vue'
@@ -542,6 +542,8 @@ const simpan = async () => {
       const dikenal = /^(kode|nama|kelompok_id|merk_id|satuan|satuan\.\d+\.(satuan_id|isi|barcode|harga_beli|harga_jual|margin_persen))$/
       const lain = Object.keys(errs).find((k) => !dikenal.test(k))
       toastError('Periksa kembali isian barang', { description: lain ? errs[lain][0] : pesanGalat(e, 'Ada isian yang belum benar.') })
+      await nextTick()
+      document.querySelector('#form-barang .pesan-galat')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
     } else {
       toastError(pesanGalat(e, 'Gagal menyimpan barang'))
     }

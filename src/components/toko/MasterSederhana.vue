@@ -7,7 +7,7 @@
         <p class="mt-1 text-sm text-muted-foreground">{{ deskripsi }}</p>
       </div>
       <button v-if="bisaUbah" type="button" class="tombol-utama" @click="bukaTambah">
-        <Plus class="h-4 w-4" /> Tambah {{ label }}
+        <Plus class="h-4 w-4" /> Tambah {{ capital(label) }}
       </button>
     </div>
 
@@ -55,7 +55,7 @@
           <p class="mt-3 text-sm font-medium text-foreground">Belum ada {{ label }}</p>
           <p v-if="bisaUbah" class="mt-1 text-sm text-muted-foreground">Tambahkan {{ label }} pertama untuk mulai memakainya.</p>
           <button v-if="bisaUbah" type="button" class="tombol-utama mt-4" @click="bukaTambah">
-            <Plus class="h-4 w-4" /> Tambah {{ label }}
+            <Plus class="h-4 w-4" /> Tambah {{ capital(label) }}
           </button>
         </template>
       </div>
@@ -181,7 +181,7 @@
           <input v-model="form.is_aktif" type="checkbox" class="mt-0.5 h-4 w-4 accent-green-600" />
           <span>
             <span class="block text-sm font-medium text-foreground">Aktif</span>
-            <span class="block text-xs text-muted-foreground">{{ label.charAt(0).toUpperCase() + label.slice(1) }} nonaktif tidak muncul di pilihan, tetapi riwayatnya tetap tersimpan.</span>
+            <span class="block text-xs text-muted-foreground">{{ capital(label) }} nonaktif tidak muncul di pilihan, tetapi riwayatnya tetap tersimpan.</span>
           </span>
         </label>
       </form>
@@ -259,6 +259,7 @@ const { success, error: toastError } = useToast()
 const userStore = useUserStore()
 
 const label = computed(() => props.namaItem || props.judul.toLowerCase())
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const bisaUbah = computed(() => userStore.can(props.menu))
 const kolom = computed(() => props.fields.filter((f) => f.diTabel !== false))
 const idForm = `form-master-${props.jenis}`
@@ -379,7 +380,6 @@ const simpan = async () => {
   }
 }
 
-const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 // --- Aktif / nonaktif ---
 const mengubahStatus = ref<number | null>(null)

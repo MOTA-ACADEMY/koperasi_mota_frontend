@@ -58,7 +58,7 @@
         :key="k"
         type="button"
         class="chip"
-        :class="kategori === k ? CHIP_AKTIF : CHIP_BIASA"
+        :class="[kategori === k ? CHIP_AKTIF : CHIP_BIASA, { 'opacity-60': !jumlahPerKategori[k] && kategori !== k }]"
         :aria-pressed="kategori === k"
         @click="kategori = kategori === k ? null : k"
       >
@@ -168,7 +168,7 @@
 
         <div>
           <label for="jasa-kode" class="label">Kode <span class="font-normal text-muted-foreground">(opsional)</span></label>
-          <input id="jasa-kode" v-model="form.kode" type="text" maxlength="30" placeholder="Otomatis, mis. JSA0001" class="isian font-mono" :class="kelasGalat('kode')" />
+          <input id="jasa-kode" v-model="form.kode" type="text" maxlength="30" placeholder="Otomatis, mis. JSA0001" class="isian font-mono placeholder:font-sans" :class="kelasGalat('kode')" />
           <p v-if="errors.kode" class="pesan-galat">{{ errors.kode }}</p>
         </div>
 

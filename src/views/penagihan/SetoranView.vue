@@ -342,7 +342,10 @@ onMounted(() => muat())
 <style scoped>
 @reference "../../assets/main.css";
 
-.tombol-kecil {
-  @apply rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40;
+/* Dalam layer components supaya utility Tailwind (mis. text-red-600) tetap bisa menimpa. */
+@layer components {
+  .tombol-kecil {
+    @apply rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40;
+  }
 }
 </style>

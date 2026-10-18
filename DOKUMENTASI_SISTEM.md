@@ -196,7 +196,18 @@ yang dicek router guard.
   (`?dari_po=`, terisi sisa PO & harga PO; selisih harga ditandai). Adjustment punya jenis penyesuaian,
   konversi satuan (jumlah tujuan dihitung dari `isi` satuan), dan stok awal. **Persetujuan Gudang** =
   kotak masuk semua draft (`?buka=` membuka dokumennya). **Kartu Stok** = mutasi per barang-satuan.
-- **Kasir** (`views/kasir/*`, service `services/kasirService.ts`): lihat bagian halaman kasir di bawah.
+- **Kasir** (`views/kasir/*`, service `services/kasirService.ts`, komponen `components/kasir/*`):
+  - *Belum buka*: kartu Buka Kasir (modal awal, tombol cepat). *Sudah buka*: kolom pencarian (scan barcode
+    → Enter langsung masuk keranjang; ketik ≥2 huruf untuk cari), tab Barang/Jasa (jasa nominal bebas minta
+    nominal & no. pelanggan), keranjang (qty dibatasi stok yang diketahui; disimpan di `sessionStorage`
+    per koperasi supaya tidak hilang saat refresh), panel Pembayaran tunai (uang diterima, tombol nominal
+    cepat, kembalian) / QRIS, lalu struk (`StrukPenjualan.vue`, bisa dicetak — hanya struk yang tercetak).
+  - Panel *Transaksi* (batal dengan alasan, cetak ulang struk) dan *Tutup Kasir* (uang seharusnya vs uang
+    fisik, selisih berwarna). Pintasan: F2 cari, F9 bayar/konfirmasi.
+  - *Riwayat Kasir*: daftar sesi (kasir hanya miliknya; menu Riwayat Kasir = semua), detail ringkasan sesi
+    termasuk laba kotor dan daftar transaksi.
+- Gaya helper di `<style scoped>` (`@apply`) dibungkus `@layer components` supaya utility Tailwind di
+  elemen yang sama (mis. `text-red-600`) tetap menang.
 - Panel geser bersama: `components/common/PanelSheet.vue` (bottom sheet di ponsel, panel kanan di desktop;
   prop `lebar`: normal/lebar/penuh). Toast memakai posisi `responsif` (atas-tengah di ponsel, kiri-bawah
   di desktop) supaya tidak menutupi tombol aksi panel.
