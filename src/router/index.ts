@@ -191,6 +191,48 @@ const router = createRouter({
           ]
         },
         {
+          path: '/kasir',
+          children: [
+            {
+              path: '',
+              name: 'kasir-pos',
+              component: () => import('../views/kasir/PosView.vue'),
+              meta: { menu: 'kasir.pos' }
+            },
+            {
+              path: 'riwayat',
+              name: 'kasir-riwayat',
+              component: () => import('../views/kasir/RiwayatKasirView.vue'),
+              // Kasir melihat sesinya sendiri; pemegang Riwayat Kasir melihat semua.
+              meta: { menu: ['kasir.riwayat', 'kasir.pos'] }
+            }
+          ]
+        },
+        {
+          path: '/toko',
+          children: [
+            { path: 'barang', name: 'toko-barang', component: () => import('../views/toko/BarangView.vue'), meta: { menu: 'toko.barang' } },
+            { path: 'jasa', name: 'toko-jasa', component: () => import('../views/toko/JasaView.vue'), meta: { menu: 'toko.jasa' } },
+            { path: 'satuan', name: 'toko-satuan', component: () => import('../views/toko/SatuanView.vue'), meta: { menu: 'toko.satuan' } },
+            { path: 'merk', name: 'toko-merk', component: () => import('../views/toko/MerkView.vue'), meta: { menu: 'toko.merk' } },
+            { path: 'distributor', name: 'toko-distributor', component: () => import('../views/toko/DistributorView.vue'), meta: { menu: 'toko.distributor' } }
+          ]
+        },
+        {
+          path: '/gudang',
+          children: [
+            { path: 'persetujuan', name: 'gudang-persetujuan', component: () => import('../views/gudang/PersetujuanView.vue'), meta: { menu: 'gudang.persetujuan' } },
+            // Dokumen gudang juga bisa dibuka (lihat & setujui) oleh pemegang menu Persetujuan.
+            { path: 'pre-order', name: 'gudang-pre-order', component: () => import('../views/gudang/PreOrderView.vue'), meta: { menu: ['gudang.pre-order', 'gudang.persetujuan'] } },
+            { path: 'purchase-order', name: 'gudang-purchase-order', component: () => import('../views/gudang/PurchaseOrderView.vue'), meta: { menu: ['gudang.purchase-order', 'gudang.persetujuan'] } },
+            { path: 'receiving', name: 'gudang-receiving', component: () => import('../views/gudang/ReceivingView.vue'), meta: { menu: ['gudang.receiving', 'gudang.persetujuan'] } },
+            { path: 'retur', name: 'gudang-retur', component: () => import('../views/gudang/ReturView.vue'), meta: { menu: ['gudang.retur', 'gudang.persetujuan'] } },
+            { path: 'adjustment', name: 'gudang-adjustment', component: () => import('../views/gudang/AdjustmentView.vue'), meta: { menu: ['gudang.adjustment', 'gudang.persetujuan'] } },
+            { path: 'opname', name: 'gudang-opname', component: () => import('../views/gudang/OpnameView.vue'), meta: { menu: ['gudang.opname', 'gudang.persetujuan'] } },
+            { path: 'kartu-stok', name: 'gudang-kartu-stok', component: () => import('../views/gudang/KartuStokView.vue'), meta: { menu: 'gudang.kartu-stok' } }
+          ]
+        },
+        {
           path: '/penagihan',
           children: [
             {
@@ -323,8 +365,9 @@ router.beforeEach((to) => {
   }
 
   // RBAC: halaman yang terikat menu hanya boleh dibuka bila menu itu ada di hak akses user.
-  const menu = to.meta.menu as string | undefined
-  if (menu && hasKoperasi && !bolehAkses(menu)) {
+  // `meta.menu` boleh berupa daftar — cukup punya salah satunya.
+  const menus = ([] as string[]).concat((to.meta.menu as string | string[] | undefined) ?? [])
+  if (menus.length && hasKoperasi && !menus.some(bolehAkses)) {
     // Mis. user tanpa menu Dashboard yang baru login → arahkan ke menu pertama miliknya.
     const pertama = authService.getMenu()[0]?.children?.[0]?.path
     if (to.name === 'dashboard' && pertama && pertama !== to.path) {

@@ -103,7 +103,7 @@ import { useToastStore } from '@/stores/toast'
 import { Button } from '@/components/ui'
 
 interface ToasterProps {
-  position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'responsif'
   class?: string
 }
 
@@ -121,6 +121,8 @@ const getPositionClasses = (pos: string) => {
     'bottom-left': 'bottom-4 left-4',
     'bottom-center': 'bottom-4 left-1/2 transform -translate-x-1/2',
     'bottom-right': 'bottom-4 right-4',
+    // Ponsel: atas-tengah (panel muncul dari bawah); layar lebar: kiri-bawah (panel muncul dari kanan).
+    responsif: 'top-4 left-1/2 -translate-x-1/2 px-4 sm:px-0 sm:top-auto sm:bottom-4 sm:left-4 sm:translate-x-0',
   }
   return `fixed ${positions[pos as keyof typeof positions]} flex flex-col w-full max-w-sm`
 }

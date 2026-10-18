@@ -121,6 +121,9 @@ anaknya ditulis absolut (`/members`, `/akuntansi/...`), jadi URL-nya tidak beraw
 | `/simpanan/pokok`, `/simpanan/wajib`, `/simpanan/sukarela` | simpanan/* | ✅ |
 | `/penagihan` | penagihan/LapanganView | ✅ peta wilayah, GPS, tagih, kwitansi, setor (kolektor) / pantau (bendahara) |
 | `/penagihan/setoran` | penagihan/SetoranView | ✅ verifikasi / tolak setoran kolektor |
+| `/kasir`, `/kasir/riwayat` | kasir/PosView, kasir/RiwayatKasirView | ✅ buka/tutup kasir, penjualan barang & jasa (tunai/QRIS), riwayat sesi |
+| `/toko/barang`, `/toko/jasa`, `/toko/satuan`, `/toko/merk`, `/toko/distributor` | toko/* | ✅ master toko (kelompok barang ada di halaman Barang) |
+| `/gudang/persetujuan`, `/gudang/{pre-order,purchase-order,receiving,retur,adjustment,opname}`, `/gudang/kartu-stok` | gudang/* | ✅ dokumen gudang dengan persetujuan, kartu stok |
 | `/akuntansi/buku-periode` … `/akuntansi/jurnal-umum` (7 halaman) | akuntansi/* | ✅ |
 | `/accounts`, `/loans`, `/transactions`, `/reports`, `/branches`, `/staff`, `/calculator` | placeholder → DashboardView | ❌ belum dibuat |
 | `/components`, `/datatable-demo`, `/dialog-demo`, `/toast-demo`, `/api-examples`, dll. | demo | sisa template |
@@ -177,6 +180,29 @@ yang dicek router guard.
   lunas + jurnal draft) atau *Tolak* (catatan wajib; kwitansi kembali ke kolektor).
 - Service: `services/penagihanService.ts`; helper warna/format: `lib/penagihan.ts`.
 
+### Toko, Gudang & Kasir
+- **Master Toko** (`views/toko/*`, service `services/tokoService.ts`): Satuan, Merk, Distributor memakai
+  komponen generik `components/toko/MasterSederhana.vue`. **Barang** = satu halaman berisi panel kelompok
+  barang + daftar barang; satu barang punya beberapa satuan (harga beli, margin, harga jual, stok per
+  satuan). Harga jual dihitung dari harga beli + margin (`hargaJualDariMargin`, dibulatkan ke atas Rp100)
+  dan bisa diubah manual. Stok hanya tampil (diubah lewat dokumen gudang/kasir). **Jasa** = layanan
+  pembayaran (token/tagihan listrik, PDAM, top-up game) — pencatatan saja.
+- **Gudang** (`views/gudang/*`, service `services/gudangService.ts`): enam dokumen (Pre Order, PO, Receiving,
+  Retur, Adjustment, Stok Opname) memakai satu komponen `components/gudang/DokumenGudangPage.vue`
+  (prop `jenis`) — daftar + filter status, panel detail (setujui/tolak bagi pemegang menu Persetujuan
+  Gudang; ubah/hapus selama draft/ditolak), dan form (panel lebar) dengan pemilih barang
+  `components/gudang/BarangPicker.vue` (cari nama/kode, Enter = barcode persis). Alur antar dokumen:
+  pre order disetujui → tombol *Buat Purchase Order* (`?dari_pre=`), PO disetujui → *Terima barang (RO)*
+  (`?dari_po=`, terisi sisa PO & harga PO; selisih harga ditandai). Adjustment punya jenis penyesuaian,
+  konversi satuan (jumlah tujuan dihitung dari `isi` satuan), dan stok awal. **Persetujuan Gudang** =
+  kotak masuk semua draft (`?buka=` membuka dokumennya). **Kartu Stok** = mutasi per barang-satuan.
+- **Kasir** (`views/kasir/*`, service `services/kasirService.ts`): lihat bagian halaman kasir di bawah.
+- Panel geser bersama: `components/common/PanelSheet.vue` (bottom sheet di ponsel, panel kanan di desktop;
+  prop `lebar`: normal/lebar/penuh). Toast memakai posisi `responsif` (atas-tengah di ponsel, kiri-bawah
+  di desktop) supaya tidak menutupi tombol aksi panel.
+- `meta.menu` di router kini boleh berupa daftar (cukup punya salah satu menu), mis. dokumen gudang juga
+  terbuka untuk pemegang menu Persetujuan Gudang.
+
 ### Akuntansi (`/akuntansi/*`)
 | Halaman | Fungsi |
 |---|---|
@@ -217,7 +243,8 @@ Backend (`php artisan serve`) dan MySQL harus sudah dinyalakan pemilik proyek ag
 
 Akun demo (dari `php artisan db:seed --class=DemoSeeder` di backend), password `demo12345`:
 `admin@demo.koperasi.test` (2 koperasi → diminta memilih), `staf@demo.koperasi.test` (1 koperasi), dan
-`kolektor@demo.koperasi.test` (langsung ke Penagihan Lapangan; 3 anggota demo ada di wilayahnya).
+`kolektor@demo.koperasi.test` (langsung ke Penagihan Lapangan; 3 anggota demo ada di wilayahnya), dan
+`kasir@demo.koperasi.test` (langsung ke Kasir POS; barang & jasa demo sudah tersedia).
 
 ## 9. Catatan Temuan / Hal yang Perlu Diperhatikan
 

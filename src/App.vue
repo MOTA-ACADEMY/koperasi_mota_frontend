@@ -1,7 +1,8 @@
 <template>
   <div id="app" class="min-h-screen">
     <RouterView />
-    <Toaster />
+    <!-- Posisi responsif supaya tidak menutupi tombol aksi di panel (PanelSheet) -->
+    <Toaster position="responsif" />
   </div>
 </template>
 

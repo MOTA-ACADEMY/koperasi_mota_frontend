@@ -21,7 +21,8 @@
         role="dialog"
         aria-modal="true"
         :aria-label="title"
-        class="fixed inset-x-0 bottom-0 z-[61] flex max-h-[92vh] flex-col rounded-t-2xl border border-border bg-card shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[440px] sm:rounded-none sm:border-y-0 sm:border-r-0"
+        class="fixed inset-x-0 bottom-0 z-[61] flex max-h-[92vh] flex-col rounded-t-2xl border border-border bg-card shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:rounded-none sm:border-y-0 sm:border-r-0"
+        :class="LEBAR[lebar ?? 'normal']"
       >
         <div class="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-border sm:hidden" />
         <header class="flex shrink-0 items-start gap-3 border-b border-border px-5 py-4">
@@ -69,7 +70,15 @@ const props = defineProps<{
   title: string
   subtitle?: string
   back?: boolean
+  /** normal 440px (detail/form kecil), lebar 760px (form dokumen dengan tabel), penuh. */
+  lebar?: 'normal' | 'lebar' | 'penuh'
 }>()
+
+const LEBAR = {
+  normal: 'sm:w-[440px]',
+  lebar: 'sm:w-[min(760px,100vw)]',
+  penuh: 'sm:w-[min(1100px,100vw)]'
+}
 
 const emit = defineEmits<{
   close: []

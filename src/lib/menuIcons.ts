@@ -1,7 +1,10 @@
 import {
+  BadgeCheck,
   BookOpen,
   BookText,
   Circle,
+  ClipboardCheck,
+  ClipboardList,
   FileStack,
   FolderTree,
   HandCoins,
@@ -10,12 +13,24 @@ import {
   MapPinned,
   Navigation,
   Network,
+  Package,
+  PackageCheck,
   PiggyBank,
+  ReceiptText,
+  Ruler,
   Scale,
+  ScanBarcode,
+  ScrollText,
   ShieldCheck,
+  ShoppingCart,
+  SlidersHorizontal,
+  Tag,
   Tags,
+  Truck,
+  Undo2,
   UserCog,
   Users,
+  Zap,
   type LucideIcon
 } from 'lucide-vue-next'
 
@@ -25,8 +40,11 @@ import {
  * menu baru di MenuCatalog backend dengan ikon lain.
  */
 const ICONS: Record<string, LucideIcon> = {
+  BadgeCheck,
   BookOpen,
   BookText,
+  ClipboardCheck,
+  ClipboardList,
   FileStack,
   FolderTree,
   HandCoins,
@@ -35,12 +53,24 @@ const ICONS: Record<string, LucideIcon> = {
   MapPinned,
   Navigation,
   Network,
+  Package,
+  PackageCheck,
   PiggyBank,
+  ReceiptText,
+  Ruler,
   Scale,
+  ScanBarcode,
+  ScrollText,
   ShieldCheck,
+  ShoppingCart,
+  SlidersHorizontal,
+  Tag,
   Tags,
+  Truck,
+  Undo2,
   UserCog,
-  Users
+  Users,
+  Zap
 }
 
 export function menuIcon(name: string | null | undefined): LucideIcon {

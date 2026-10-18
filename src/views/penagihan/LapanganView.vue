@@ -545,7 +545,7 @@ import {
   Users,
   Wallet
 } from 'lucide-vue-next'
-import PanelSheet from '@/components/penagihan/PanelSheet.vue'
+import PanelSheet from '@/components/common/PanelSheet.vue'
 import PetaPenagihan from '@/components/penagihan/PetaPenagihan.vue'
 import { useGpsKolektor, jarakMeter, formatJarak } from '@/composables/useGpsKolektor'
 import { useToast } from '@/composables/useToast'

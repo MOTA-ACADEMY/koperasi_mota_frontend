@@ -218,7 +218,7 @@
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { CircleCheck, Loader2, MapPin, TriangleAlert } from 'lucide-vue-next'
-import PanelSheet from '@/components/penagihan/PanelSheet.vue'
+import PanelSheet from '@/components/common/PanelSheet.vue'
 import { useToast } from '@/composables/useToast'
 import { useUserStore } from '@/stores'
 import { formatAngka, formatPeriode, formatRupiah } from '@/lib/format'
