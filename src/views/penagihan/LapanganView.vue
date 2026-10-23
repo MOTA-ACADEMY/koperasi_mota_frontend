@@ -85,22 +85,36 @@
               v-if="wilayah"
               ref="petaRef"
               :wilayah="wilayah.kolektor.wilayah"
-              :anggota="wilayah.anggota"
+              :anggota="anggotaTampil"
               :terpilih-id="terpilihId"
               :posisi-saya="modePantau ? null : gps.posisi.value"
               :posisi-kolektor="posisiKolektorDipantau"
               @pilih="bukaAnggota"
             />
           </div>
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
-            <span v-for="(label, kode) in LABEL_STATUS_TITIK" :key="kode" class="inline-flex items-center gap-1.5">
-              <span class="h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-card" :style="{ background: WARNA_STATUS[kode] }" />
-              {{ label }}
-            </span>
-            <span v-if="!modePantau" class="inline-flex items-center gap-1.5">
+          <!-- Filter status (sekaligus legenda warna titik). Default: hanya merah. -->
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-3 py-2.5 text-xs text-muted-foreground" role="group" aria-label="Filter status anggota">
+            <span class="font-medium text-foreground">Tampilkan:</span>
+            <button
+              v-for="st in URUTAN_STATUS"
+              :key="st"
+              type="button"
+              :aria-pressed="statusDipilih.includes(st)"
+              class="inline-flex h-8 items-center gap-1.5 rounded-full border px-3 font-medium transition-colors"
+              :class="statusDipilih.includes(st)
+                ? 'border-foreground/25 bg-card text-foreground shadow-sm'
+                : 'border-dashed border-border bg-transparent text-muted-foreground hover:text-foreground'"
+              :title="statusDipilih.includes(st) && statusDipilih.length === 1 ? 'Minimal satu status ditampilkan' : undefined"
+              @click="toggleStatus(st)"
+            >
+              <span class="h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-card" :style="{ background: statusDipilih.includes(st) ? WARNA_STATUS[st] : 'transparent', boxShadow: `inset 0 0 0 2px ${WARNA_STATUS[st]}` }" />
+              {{ labelStatus(st, batasHari) }}
+              <span class="tabular-nums text-muted-foreground">{{ jumlahPerStatus[st] }}</span>
+            </button>
+            <span v-if="!modePantau" class="inline-flex items-center gap-1.5 sm:ml-auto">
               <span class="h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-white dark:ring-card" /> Posisi Anda
             </span>
-            <span v-else-if="posisiKolektorDipantau" class="inline-flex items-center gap-1.5">
+            <span v-else-if="posisiKolektorDipantau" class="inline-flex items-center gap-1.5 sm:ml-auto">
               <span class="h-2.5 w-2.5 rotate-45 rounded-[2px] bg-blue-600" /> Posisi terakhir kolektor
             </span>
           </div>
@@ -132,10 +146,6 @@
                 class="h-9 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-600/30"
               />
             </div>
-            <label class="mt-2 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-              <input v-model="hanyaMenunggak" type="checkbox" class="h-3.5 w-3.5 accent-green-600" />
-              Hanya yang punya tagihan
-            </label>
           </div>
 
           <ul class="min-h-0 flex-1 divide-y divide-border overflow-y-auto">
@@ -153,14 +163,20 @@
                 </span>
                 <span class="shrink-0 text-right">
                   <span v-if="a.tunggakan.sisa > 0" class="block text-sm font-semibold tabular-nums text-foreground">{{ formatRupiah(a.tunggakan.sisa) }}</span>
-                  <span v-else-if="a.tunggakan.menunggu_setoran > 0" class="block text-xs font-medium text-violet-700 dark:text-violet-400">Menunggu setoran</span>
-                  <span v-else class="block text-xs text-muted-foreground">Lunas</span>
+                  <span v-if="statusTitik(a) === 'merah'" class="block text-[11px] font-medium text-red-600 dark:text-red-400">Terlambat {{ a.tunggakan.hari_lewat_terlama }} hari</span>
+                  <span v-else-if="a.tunggakan.sisa <= 0 && a.tunggakan.menunggu_setoran > 0" class="block text-xs font-medium text-green-700 dark:text-green-400">Sudah bayar · menunggu setoran</span>
+                  <span v-else-if="a.tunggakan.sisa <= 0" class="block text-xs font-medium text-green-700 dark:text-green-400">Sudah bayar</span>
                   <span v-if="jarakKe(a)" class="block text-[11px] text-muted-foreground">{{ jarakKe(a) }}</span>
                 </span>
               </button>
             </li>
             <li v-if="!daftarAnggota.length" class="px-4 py-10 text-center text-sm text-muted-foreground">
-              {{ wilayah?.anggota.length ? 'Tidak ada anggota yang cocok.' : 'Belum ada anggota berkoordinat di dalam wilayah ini.' }}
+              <template v-if="!wilayah?.anggota.length">Belum ada anggota berkoordinat di dalam wilayah ini.</template>
+              <template v-else-if="cari.trim()">Tidak ada anggota yang cocok.</template>
+              <template v-else>
+                Tidak ada anggota berstatus {{ statusDipilih.map((st) => labelStatus(st, batasHari).toLowerCase()).join(' / ') }}.
+                <span class="mt-1 block text-xs">Aktifkan status lain di bawah peta untuk melihat anggota lainnya.</span>
+              </template>
             </li>
           </ul>
         </div>
@@ -310,7 +326,7 @@
               </div>
               <div class="shrink-0 text-right">
                 <p class="text-sm font-semibold tabular-nums text-foreground">{{ formatRupiah(t.sisa) }}</p>
-                <span v-if="t.lewat_jatuh_tempo && t.sisa > 0" class="text-[11px] font-medium text-red-600 dark:text-red-400">Lewat jatuh tempo</span>
+                <span v-if="t.sisa > 0 && t.lewat_jatuh_tempo" class="text-[11px] font-medium" :class="kelasTerlambat(t)">{{ teksTerlambat(t) }}</span>
               </div>
             </li>
           </ul>
@@ -355,7 +371,7 @@
               <span class="min-w-0 flex-1">
                 <span class="block text-sm font-medium text-foreground">{{ LABEL_JENIS[t.jenis] }} · {{ formatPeriode(t.periode) }}</span>
                 <span class="block text-xs text-muted-foreground">
-                  Sisa {{ formatRupiah(t.sisa) }}<template v-if="t.lewat_jatuh_tempo"> · <span class="text-red-600 dark:text-red-400">lewat jatuh tempo</span></template>
+                  Sisa {{ formatRupiah(t.sisa) }}<template v-if="t.lewat_jatuh_tempo"> · <span :class="kelasTerlambat(t)">{{ teksTerlambat(t).toLowerCase() }}</span></template>
                 </span>
               </span>
             </label>
@@ -551,7 +567,7 @@ import { useGpsKolektor, jarakMeter, formatJarak } from '@/composables/useGpsKol
 import { useToast } from '@/composables/useToast'
 import { useUserStore } from '@/stores'
 import { formatPeriode, formatRupiah, formatRupiahRingkas, formatTanggal } from '@/lib/format'
-import { LABEL_STATUS_TITIK, WARNA_STATUS, formatWaktu, nomorWa, statusTitik } from '@/lib/penagihan'
+import { URUTAN_STATUS, WARNA_STATUS, formatWaktu, labelStatus, nomorWa, statusTitik, type StatusTitik } from '@/lib/penagihan'
 import {
   LABEL_JENIS,
   LABEL_STATUS_PEMBAYARAN,
@@ -587,10 +603,11 @@ const gps = useGpsKolektor()
 const memuat = ref(true)
 const konteks = ref<KonteksPenagihan | null>(null)
 const kolektorDipilih = ref<number | null>(null)
-const wilayah = ref<{ kolektor: KolektorRingkas; anggota: AnggotaPeta[] } | null>(null)
+const wilayah = ref<{ kolektor: KolektorRingkas; anggota: AnggotaPeta[]; batas_terlambat_hari?: number } | null>(null)
 const tab = ref<Tab>('peta')
 const cari = ref('')
-const hanyaMenunggak = ref(false)
+/** Status yang ditampilkan di peta & daftar. Default hanya merah (prioritas tagih). */
+const statusDipilih = ref<StatusTitik[]>(['merah'])
 const petaRef = ref<InstanceType<typeof PetaPenagihan> | null>(null)
 
 const uangDipegang = ref({ jumlah: 0, total: 0 })
@@ -662,23 +679,43 @@ const ringkasan = computed(() => {
   }
 })
 
-const URUTAN_STATUS = { lewat: 0, tunggak: 1, menunggu: 2, bersih: 3 }
+const batasHari = computed(() => wilayah.value?.batas_terlambat_hari ?? 3)
+
+const jumlahPerStatus = computed(() => {
+  const n: Record<StatusTitik, number> = { merah: 0, kuning: 0, hijau: 0 }
+  ;(wilayah.value?.anggota ?? []).forEach((a) => n[statusTitik(a)]++)
+  return n
+})
+
+/** Kombinasi bebas (1, 2, atau 3 status), tapi minimal satu tetap aktif. */
+const toggleStatus = (st: StatusTitik) => {
+  const aktif = statusDipilih.value.includes(st)
+  if (aktif && statusDipilih.value.length === 1) return
+  statusDipilih.value = aktif ? statusDipilih.value.filter((x) => x !== st) : URUTAN_STATUS.filter((x) => x === st || statusDipilih.value.includes(x))
+}
+
+const anggotaTampil = computed(() => (wilayah.value?.anggota ?? []).filter((a) => statusDipilih.value.includes(statusTitik(a))))
 
 const daftarAnggota = computed(() => {
   const q = cari.value.trim().toLowerCase()
-  return (wilayah.value?.anggota ?? [])
-    .filter((a) => !hanyaMenunggak.value || a.tunggakan.sisa > 0)
+  return anggotaTampil.value
     .filter((a) => !q || [a.nama, a.kode, a.alamat ?? ''].some((v) => v.toLowerCase().includes(q)))
     .slice()
     .sort((x, y) => {
-      const s = URUTAN_STATUS[statusTitik(x)] - URUTAN_STATUS[statusTitik(y)]
+      const s = URUTAN_STATUS.indexOf(statusTitik(x)) - URUTAN_STATUS.indexOf(statusTitik(y))
       if (s !== 0) return s
+      // Sama-sama merah: yang paling lama terlambat dulu.
+      const lama = y.tunggakan.hari_lewat_terlama - x.tunggakan.hari_lewat_terlama
+      if (statusTitik(x) === 'merah' && lama !== 0) return lama
       // Kolektor di lapangan: yang terdekat dulu; pemantau: tunggakan terbesar dulu.
       const p = gps.posisi.value
       if (p && !modePantau.value) return jarakMeter(p, { lat: x.latitude, lng: x.longitude }) - jarakMeter(p, { lat: y.latitude, lng: y.longitude })
       return y.tunggakan.sisa - x.tunggakan.sisa
     })
 })
+
+const teksTerlambat = (t: Tagihan) => (t.terlambat ? `Terlambat ${t.hari_lewat} hari` : `Lewat jatuh tempo ${t.hari_lewat} hari`)
+const kelasTerlambat = (t: Tagihan) => (t.terlambat ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-400')
 
 const jarakKe = (a: AnggotaPeta) => {
   const p = gps.posisi.value

@@ -1,30 +1,31 @@
 import type { AnggotaPeta } from '@/services/penagihanService'
 
-export type StatusTitik = 'lewat' | 'tunggak' | 'menunggu' | 'bersih'
+/**
+ * Status anggota di peta penagihan (dihitung backend, lihat Penagihan::statusAnggota):
+ * merah = ada tagihan terlambat ≥ batas hari setelah jatuh tempo, kuning = belum bayar,
+ * hijau = sudah bayar semua (termasuk yang uangnya masih dipegang kolektor).
+ */
+export type StatusTitik = 'merah' | 'kuning' | 'hijau'
 
-/** Warna status titik anggota — dipakai peta, legenda, dan daftar. */
+export const URUTAN_STATUS: StatusTitik[] = ['merah', 'kuning', 'hijau']
+
+/** Warna status titik anggota — dipakai peta, filter, dan daftar. */
 export const WARNA_STATUS: Record<StatusTitik, string> = {
-  lewat: '#dc2626',
-  tunggak: '#d97706',
-  menunggu: '#7c3aed',
-  bersih: '#16a34a'
+  merah: '#dc2626',
+  kuning: '#eab308',
+  hijau: '#16a34a'
 }
 
-export const LABEL_STATUS_TITIK: Record<StatusTitik, string> = {
-  lewat: 'Lewat jatuh tempo',
-  tunggak: 'Ada tagihan',
-  menunggu: 'Sudah bayar, menunggu setoran',
-  bersih: 'Tidak ada tagihan'
-}
+export const labelStatus = (status: StatusTitik, batasHari = 3): string =>
+  ({
+    merah: `Terlambat ≥ ${batasHari} hari`,
+    kuning: 'Belum bayar',
+    hijau: 'Sudah bayar'
+  })[status]
 
+/** Status dari backend; hitung di klien hanya sebagai cadangan untuk respons lama. */
 export const statusTitik = (a: AnggotaPeta): StatusTitik =>
-  a.tunggakan.lewat_jatuh_tempo > 0
-    ? 'lewat'
-    : a.tunggakan.sisa > 0
-      ? 'tunggak'
-      : a.tunggakan.menunggu_setoran > 0
-        ? 'menunggu'
-        : 'bersih'
+  a.status ?? (a.tunggakan.terlambat > 0 ? 'merah' : a.tunggakan.sisa > 0 ? 'kuning' : 'hijau')
 
 /** Nomor HP lokal → format wa.me (62…). */
 export const nomorWa = (nomor: string) => {

@@ -37,11 +37,15 @@ export interface AnggotaPeta {
   alamat: string | null
   latitude: number
   longitude: number
+  status: 'merah' | 'kuning' | 'hijau'
   tunggakan: {
     jumlah: number
     sisa: number
     menunggu_setoran: number
     lewat_jatuh_tempo: number
+    /** Jumlah tagihan yang lewat jatuh tempo ≥ batas_terlambat_hari. */
+    terlambat: number
+    hari_lewat_terlama: number
   }
 }
 
@@ -52,6 +56,10 @@ export interface Tagihan {
   periode: string
   jatuh_tempo: string | null
   lewat_jatuh_tempo: boolean
+  /** Berapa hari lewat jatuh tempo (0 bila belum). */
+  hari_lewat: number
+  /** Lewat jatuh tempo ≥ batas hari (titik merah). */
+  terlambat: boolean
   nominal: number
   /** Sudah masuk kas (setoran terverifikasi). */
   terbayar: number
@@ -133,7 +141,7 @@ export const penagihanService = {
     return apiService.get('/penagihan/konteks')
   },
 
-  wilayah(kolektorId?: number | null): Promise<{ kolektor: KolektorRingkas; anggota: AnggotaPeta[] }> {
+  wilayah(kolektorId?: number | null): Promise<{ kolektor: KolektorRingkas; anggota: AnggotaPeta[]; batas_terlambat_hari: number }> {
     return apiService.get('/penagihan/wilayah', kolektorParam(kolektorId))
   },
 

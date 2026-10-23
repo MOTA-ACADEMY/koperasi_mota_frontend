@@ -161,9 +161,12 @@ yang dicek router guard.
 - **Penagihan Lapangan** (menu `penagihan.lapangan`, dipegang role sistem *Kolektor* yang otomatis
   mengikuti Master Kolektor). Satu halaman untuk semua kegiatan kolektor:
   - **Peta** (`components/penagihan/PetaPenagihan.vue`, Leaflet): poligon wilayah, titik anggota
-    berwarna sesuai status (merah lewat jatuh tempo, oranye ada tagihan, ungu sudah bayar menunggu
-    setoran, hijau bersih), dan posisi GPS kolektor. Daftar anggota di samping (ponsel: di bawah)
-    diurutkan status lalu jarak terdekat; ada pencarian & filter "hanya yang punya tagihan".
+    berwarna sesuai status dari backend — **merah** terlambat ≥ 3 hari dari jatuh tempo, **kuning** belum
+    bayar, **hijau** sudah bayar (termasuk yang menunggu setoran) — dan posisi GPS kolektor.
+  - **Filter status** di bawah peta (sekaligus legenda, dengan jumlah per status): kombinasi bebas
+    merah/kuning/hijau, minimal satu aktif; **default hanya merah**. Filter berlaku untuk titik di peta dan
+    daftar anggota. Daftar diurutkan merah → kuning → hijau (merah: paling lama terlambat dulu), lalu jarak
+    terdekat; ada pencarian nama/kode/alamat.
   - Klik titik/daftar → panel (`PanelSheet.vue`: bottom sheet di ponsel, panel kanan di desktop)
     berisi detail anggota (tanpa data KTP), tombol Telepon / WhatsApp / Rute (Google Maps),
     tagihan pokok & wajib yang belum lunas, dan tombol **Tagih**.
