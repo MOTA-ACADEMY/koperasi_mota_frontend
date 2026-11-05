@@ -50,9 +50,13 @@ export interface AnggotaPeta {
 }
 
 export interface Tagihan {
+  /** id tagihan simpanan atau id angsuran pinjaman (lihat `sumber`). */
   id: number
+  sumber: 'simpanan' | 'pinjaman'
+  /** Kunci unik lintas sumber, mis. "pinjaman-12". */
+  kunci: string
   member_id: number
-  jenis: 'pokok' | 'wajib'
+  jenis: 'pokok' | 'wajib' | 'pinjaman'
   periode: string
   jatuh_tempo: string | null
   lewat_jatuh_tempo: boolean
@@ -66,6 +70,23 @@ export interface Tagihan {
   /** Sudah diterima kolektor, belum diverifikasi bendahara. */
   menunggu_setoran: number
   sisa: number
+  // Hanya untuk angsuran pinjaman:
+  pinjaman_id?: number
+  pinjaman_nomor?: string
+  angsuran_ke?: number
+  tenor?: number
+  pokok?: number
+  bunga?: number
+}
+
+export interface AlokasiPembayaran {
+  billing_id: number | null
+  angsuran_id: number | null
+  jenis: 'pokok' | 'wajib' | 'pinjaman' | null
+  periode: string | null
+  pinjaman_nomor: string | null
+  angsuran_ke: number | null
+  nominal: number
 }
 
 export type StatusPembayaran = 'diterima_kolektor' | 'disetor' | 'diverifikasi' | 'dibatalkan'
@@ -78,7 +99,7 @@ export interface Pembayaran {
   dibayar_at: string
   member?: { id: number; kode: string; nama: string; alamat: string | null } | null
   kolektor?: { id: number; nama: string | null } | null
-  alokasi?: { billing_id: number; jenis: 'pokok' | 'wajib' | null; periode: string | null; nominal: number }[]
+  alokasi?: AlokasiPembayaran[]
   lokasi: { lat: number; lng: number; akurasi: number | null } | null
   catatan: string | null
   setoran_id: number | null
@@ -122,7 +143,8 @@ export interface Setoran {
 
 export interface PembayaranPayload {
   member_id: number
-  alokasi: { billing_id: number; nominal: number }[]
+  /** Satu baris menunjuk tagihan simpanan (billing_id) ATAU angsuran pinjaman (angsuran_id). */
+  alokasi: { billing_id?: number; angsuran_id?: number; nominal: number }[]
   latitude?: number | null
   longitude?: number | null
   akurasi?: number | null
@@ -203,7 +225,17 @@ export const penagihanService = {
   }
 }
 
-export const LABEL_JENIS: Record<string, string> = { pokok: 'Simpanan Pokok', wajib: 'Simpanan Wajib' }
+export const LABEL_JENIS: Record<string, string> = { pokok: 'Simpanan Pokok', wajib: 'Simpanan Wajib', pinjaman: 'Angsuran Pinjaman' }
+
+/** "Simpanan Wajib" / "Angsuran 3/12 · PJM-2610-0001" */
+export const labelTagihan = (t: Pick<Tagihan, 'jenis' | 'angsuran_ke' | 'tenor' | 'pinjaman_nomor'>) =>
+  t.jenis === 'pinjaman' ? `Angsuran ${t.angsuran_ke}${t.tenor ? `/${t.tenor}` : ''} · ${t.pinjaman_nomor ?? 'pinjaman'}` : LABEL_JENIS[t.jenis] ?? t.jenis
+
+/** Baris kwitansi: "Simpanan Wajib Oktober 2026" / "Angsuran ke-3 PJM-2610-0001 (Oktober 2026)" */
+export const labelAlokasi = (a: AlokasiPembayaran, periodeTeks: (p: string) => string) =>
+  a.jenis === 'pinjaman'
+    ? `Angsuran ke-${a.angsuran_ke ?? '?'} ${a.pinjaman_nomor ?? ''}${a.periode ? ` (${periodeTeks(a.periode)})` : ''}`
+    : `${LABEL_JENIS[a.jenis ?? ''] ?? ''} ${a.periode ? periodeTeks(a.periode) : ''}`.trim()
 
 export const LABEL_STATUS_PEMBAYARAN: Record<StatusPembayaran, string> = {
   diterima_kolektor: 'Dipegang kolektor',

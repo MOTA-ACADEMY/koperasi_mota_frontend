@@ -152,8 +152,8 @@
                 <p class="shrink-0 text-sm font-semibold tabular-nums text-foreground">{{ formatRupiah(p.total) }}</p>
               </div>
               <ul class="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                <li v-for="a in p.alokasi" :key="a.billing_id" class="flex justify-between gap-3">
-                  <span>{{ LABEL_JENIS[a.jenis || ''] }} {{ a.periode ? formatPeriode(a.periode) : '' }}</span>
+                <li v-for="a in p.alokasi" :key="`${a.billing_id}-${a.angsuran_id}`" class="flex justify-between gap-3">
+                  <span>{{ labelAlokasi(a, formatPeriode) }}</span>
                   <span class="tabular-nums">{{ formatRupiah(a.nominal) }}</span>
                 </li>
               </ul>
@@ -223,7 +223,7 @@ import { useToast } from '@/composables/useToast'
 import { useUserStore } from '@/stores'
 import { formatAngka, formatPeriode, formatRupiah } from '@/lib/format'
 import { formatWaktu } from '@/lib/penagihan'
-import { LABEL_JENIS, LABEL_STATUS_SETORAN, penagihanService, type Setoran, type StatusSetoran } from '@/services/penagihanService'
+import { LABEL_STATUS_SETORAN, labelAlokasi, penagihanService, type Setoran, type StatusSetoran } from '@/services/penagihanService'
 
 const FILTER: { kode: StatusSetoran | 'semua'; label: string }[] = [
   { kode: 'menunggu', label: 'Menunggu' },

@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  Banknote,
   BookOpen,
   BookText,
   Circle,
@@ -41,6 +42,7 @@ import {
  */
 const ICONS: Record<string, LucideIcon> = {
   BadgeCheck,
+  Banknote,
   BookOpen,
   BookText,
   ClipboardCheck,

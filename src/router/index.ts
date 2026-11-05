@@ -233,6 +233,12 @@ const router = createRouter({
           ]
         },
         {
+          path: '/pinjaman',
+          name: 'pinjaman',
+          component: () => import('../views/pinjaman/PinjamanView.vue'),
+          meta: { menu: 'pinjaman.anggota' }
+        },
+        {
           path: '/penagihan',
           children: [
             {

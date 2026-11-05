@@ -121,6 +121,7 @@ anaknya ditulis absolut (`/members`, `/akuntansi/...`), jadi URL-nya tidak beraw
 | `/simpanan/pokok`, `/simpanan/wajib`, `/simpanan/sukarela` | simpanan/* | ✅ |
 | `/penagihan` | penagihan/LapanganView | ✅ peta wilayah, GPS, tagih, kwitansi, setor (kolektor) / pantau (bendahara) |
 | `/penagihan/setoran` | penagihan/SetoranView | ✅ verifikasi / tolak setoran kolektor |
+| `/pinjaman` | pinjaman/PinjamanView | ✅ daftar pinjaman, pinjaman baru + simulasi, detail jadwal, bayar di kantor, batal |
 | `/kasir`, `/kasir/riwayat` | kasir/PosView, kasir/RiwayatKasirView | ✅ buka/tutup kasir, penjualan barang & jasa (tunai/QRIS), riwayat sesi |
 | `/toko/barang`, `/toko/jasa`, `/toko/satuan`, `/toko/merk`, `/toko/distributor` | toko/* | ✅ master toko (kelompok barang ada di halaman Barang) |
 | `/gudang/persetujuan`, `/gudang/{pre-order,purchase-order,receiving,retur,adjustment,opname}`, `/gudang/kartu-stok` | gudang/* | ✅ dokumen gudang dengan persetujuan, kartu stok |
@@ -182,6 +183,20 @@ yang dicek router guard.
   setoran beserta kwitansi & lokasi bayar, tombol *Uang Rp … sudah diterima* (verifikasi → tagihan
   lunas + jurnal draft) atau *Tolak* (catatan wajib; kwitansi kembali ke kolektor).
 - Service: `services/penagihanService.ts`; helper warna/format: `lib/penagihan.ts`.
+
+### Pinjaman (`/pinjaman`)
+- Daftar dengan ringkasan (pinjaman aktif, sisa pokok, peminjam & nominal menunggak) dan tab Aktif /
+  Menunggak / Lunas / Dibatalkan.
+- `components/pinjaman/FormPinjaman.vue` (panel penuh): pilih anggota aktif, jumlah, jangka waktu (bulan),
+  jenis bunga (flat / menurun / anuitas / berjangka-bertingkat), suku bunga per bulan atau per tahun,
+  tingkat bunga (berjangka; otomatis menutup seluruh tenor), tanggal cair, tagihan pertama bulan ini/bulan
+  depan, tanggal jatuh tempo. **Simulasi jadwal** dihitung backend (`POST /pinjaman/simulasi`) setiap input
+  berubah dan tetap terlihat (sticky) di desktop.
+- `components/pinjaman/DetailPinjaman.vue`: ringkasan, jadwal dengan status tiap angsuran (lunas, sebagian,
+  lewat/terlambat, dibayar ke kolektor), riwayat bayar (kantor/kolektor), *Bayar angsuran* (nominal cepat:
+  angsuran berikutnya / semua tertunggak / lunasi) dan *Batalkan* (bila belum ada pembayaran).
+- Penagihan Lapangan menampilkan angsuran sebagai "Angsuran 3/12 · PJM-…" (helper `labelTagihan`,
+  `labelAlokasi` di `penagihanService.ts`); tagihan diberi `kunci` unik lintas sumber.
 
 ### Toko, Gudang & Kasir
 - **Master Toko** (`views/toko/*`, service `services/tokoService.ts`): Satuan, Merk, Distributor memakai

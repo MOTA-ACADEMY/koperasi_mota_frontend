@@ -315,9 +315,10 @@
             <span class="text-sm font-semibold tabular-nums text-foreground">{{ formatRupiah(totalSisaDetail) }}</span>
           </div>
           <ul v-if="detail.tagihan.length" class="divide-y divide-border rounded-lg border border-border">
-            <li v-for="t in detail.tagihan" :key="t.id" class="flex items-start justify-between gap-3 px-3 py-2.5">
+            <li v-for="t in detail.tagihan" :key="t.kunci" class="flex items-start justify-between gap-3 px-3 py-2.5">
               <div class="min-w-0">
-                <p class="text-sm font-medium text-foreground">{{ LABEL_JENIS[t.jenis] }}</p>
+                <p class="text-sm font-medium text-foreground">{{ labelTagihan(t) }}</p>
+                <p v-if="t.sumber === 'pinjaman'" class="text-xs text-muted-foreground">Pokok {{ formatRupiah(t.pokok ?? 0) }} + bunga {{ formatRupiah(t.bunga ?? 0) }}</p>
                 <p class="text-xs text-muted-foreground">
                   {{ formatPeriode(t.periode) }} · jatuh tempo {{ formatTanggal(t.jatuh_tempo) }}
                 </p>
@@ -362,36 +363,36 @@
         <ul class="space-y-2">
           <li
             v-for="t in tagihanBisaDibayar"
-            :key="t.id"
+            :key="t.kunci"
             class="rounded-lg border p-3 transition-colors"
-            :class="isian[t.id]?.dipilih ? 'border-green-600 bg-green-50/60 dark:bg-green-950/30' : 'border-border'"
+            :class="isian[t.kunci]?.dipilih ? 'border-green-600 bg-green-50/60 dark:bg-green-950/30' : 'border-border'"
           >
             <label class="flex cursor-pointer items-start gap-3">
-              <input v-model="isian[t.id].dipilih" type="checkbox" class="mt-1 h-4 w-4 accent-green-600" />
+              <input v-model="isian[t.kunci].dipilih" type="checkbox" class="mt-1 h-4 w-4 accent-green-600" />
               <span class="min-w-0 flex-1">
-                <span class="block text-sm font-medium text-foreground">{{ LABEL_JENIS[t.jenis] }} · {{ formatPeriode(t.periode) }}</span>
+                <span class="block text-sm font-medium text-foreground">{{ labelTagihan(t) }} · {{ formatPeriode(t.periode) }}</span>
                 <span class="block text-xs text-muted-foreground">
                   Sisa {{ formatRupiah(t.sisa) }}<template v-if="t.lewat_jatuh_tempo"> · <span :class="kelasTerlambat(t)">{{ teksTerlambat(t).toLowerCase() }}</span></template>
                 </span>
               </span>
             </label>
-            <div v-if="isian[t.id]?.dipilih" class="mt-2 pl-7">
+            <div v-if="isian[t.kunci]?.dipilih" class="mt-2 pl-7">
               <div class="relative">
                 <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
                 <input
-                  v-model.number="isian[t.id].nominal"
+                  v-model.number="isian[t.kunci].nominal"
                   type="number"
                   inputmode="numeric"
                   min="1"
                   :max="t.sisa"
                   class="h-10 w-full rounded-lg border bg-background pl-10 pr-3 text-sm tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-green-600/30"
                   :class="nominalSalah(t) ? 'border-red-500' : 'border-border'"
-                  :aria-label="`Nominal ${LABEL_JENIS[t.jenis]} ${formatPeriode(t.periode)}`"
+                  :aria-label="`Nominal ${labelTagihan(t)} ${formatPeriode(t.periode)}`"
                 />
               </div>
               <p v-if="nominalSalah(t)" class="mt-1 text-xs text-red-600 dark:text-red-400">Isi antara Rp 1 dan {{ formatRupiah(t.sisa) }}.</p>
-              <p v-else-if="isian[t.id].nominal < t.sisa" class="mt-1 text-xs text-muted-foreground">
-                Bayar sebagian — sisa {{ formatRupiah(t.sisa - isian[t.id].nominal) }} tetap tertagih.
+              <p v-else-if="isian[t.kunci].nominal < t.sisa" class="mt-1 text-xs text-muted-foreground">
+                Bayar sebagian — sisa {{ formatRupiah(t.sisa - isian[t.kunci].nominal) }} tetap tertagih.
               </p>
             </div>
           </li>
@@ -436,8 +437,8 @@
             <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Kolektor</dt><dd class="text-right text-foreground">{{ kwitansi.kolektor?.nama || userStore.user?.name }}</dd></div>
           </dl>
           <ul class="space-y-1 border-t border-dashed border-border py-3 text-sm">
-            <li v-for="a in kwitansi.alokasi" :key="a.billing_id" class="flex justify-between gap-3">
-              <span class="text-foreground">{{ LABEL_JENIS[a.jenis || ''] }} {{ a.periode ? formatPeriode(a.periode) : '' }}</span>
+            <li v-for="a in kwitansi.alokasi" :key="`${a.billing_id}-${a.angsuran_id}`" class="flex justify-between gap-3">
+              <span class="text-foreground">{{ labelAlokasi(a, formatPeriode) }}</span>
               <span class="tabular-nums text-foreground">{{ formatRupiah(a.nominal) }}</span>
             </li>
           </ul>
@@ -569,7 +570,8 @@ import { useUserStore } from '@/stores'
 import { formatPeriode, formatRupiah, formatRupiahRingkas, formatTanggal } from '@/lib/format'
 import { URUTAN_STATUS, WARNA_STATUS, formatWaktu, labelStatus, nomorWa, statusTitik, type StatusTitik } from '@/lib/penagihan'
 import {
-  LABEL_JENIS,
+  labelAlokasi,
+  labelTagihan,
   LABEL_STATUS_PEMBAYARAN,
   LABEL_STATUS_SETORAN,
   penagihanService,
@@ -620,7 +622,7 @@ const panel = ref<'detail' | 'tagih' | 'kwitansi' | null>(null)
 const terpilihId = ref<number | null>(null)
 const memuatDetail = ref(false)
 const detail = ref<DetailAnggota | null>(null)
-const isian = reactive<Record<number, { dipilih: boolean; nominal: number }>>({})
+const isian = reactive<Record<string, { dipilih: boolean; nominal: number }>>({})
 const catatanBayar = ref('')
 const menyimpan = ref(false)
 const kwitansi = ref<Pembayaran | null>(null)
@@ -739,12 +741,12 @@ const jarakDetail = computed(() => {
 
 const totalSisaDetail = computed(() => (detail.value?.tagihan ?? []).reduce((n, t) => n + t.sisa, 0))
 const tagihanBisaDibayar = computed(() => (detail.value?.tagihan ?? []).filter((t) => t.sisa > 0))
-const alokasiDipilih = computed(() => tagihanBisaDibayar.value.filter((t) => isian[t.id]?.dipilih))
-const totalBayar = computed(() => alokasiDipilih.value.reduce((n, t) => n + (Number(isian[t.id].nominal) || 0), 0))
+const alokasiDipilih = computed(() => tagihanBisaDibayar.value.filter((t) => isian[t.kunci]?.dipilih))
+const totalBayar = computed(() => alokasiDipilih.value.reduce((n, t) => n + (Number(isian[t.kunci].nominal) || 0), 0))
 const semuaTerpilih = computed(() => tagihanBisaDibayar.value.length > 0 && alokasiDipilih.value.length === tagihanBisaDibayar.value.length)
 
 const nominalSalah = (t: Tagihan) => {
-  const n = Number(isian[t.id]?.nominal)
+  const n = Number(isian[t.kunci]?.nominal)
   return !Number.isFinite(n) || n < 1 || n > t.sisa
 }
 
@@ -759,7 +761,11 @@ const inisial = (nama: string) =>
 
 const ringkasAlokasi = (p: Pembayaran) =>
   (p.alokasi ?? [])
-    .map((a) => `${a.jenis === 'pokok' ? 'Pokok' : 'Wajib'} ${a.periode ? formatPeriode(a.periode, true) + ' ' + a.periode.slice(0, 4) : ''}`)
+    .map((a) =>
+      a.jenis === 'pinjaman'
+        ? `Angsuran ke-${a.angsuran_ke} ${a.pinjaman_nomor ?? ''}`
+        : `${a.jenis === 'pokok' ? 'Pokok' : 'Wajib'} ${a.periode ? formatPeriode(a.periode, true) + ' ' + a.periode.slice(0, 4) : ''}`
+    )
     .join(', ')
 
 const tautanWaKwitansi = computed(() => {
@@ -771,7 +777,7 @@ const tautanWaKwitansi = computed(() => {
     `Anggota: ${k.member?.nama} (${k.member?.kode})`,
     `Tanggal: ${formatWaktu(k.dibayar_at)}`,
     '',
-    ...(k.alokasi ?? []).map((a) => `- ${LABEL_JENIS[a.jenis || '']} ${a.periode ? formatPeriode(a.periode) : ''}: ${formatRupiah(a.nominal)}`),
+    ...(k.alokasi ?? []).map((a) => `- ${labelAlokasi(a, formatPeriode)}: ${formatRupiah(a.nominal)}`),
     '',
     `*Total: ${formatRupiah(k.total)}*`,
     `Diterima oleh: ${k.kolektor?.nama || userStore.user?.name || 'kolektor'}`
@@ -818,9 +824,9 @@ const bukaAnggota = async (id: number, dariDaftar = false) => {
 }
 
 const mulaiTagih = () => {
-  Object.keys(isian).forEach((k) => delete isian[Number(k)])
+  Object.keys(isian).forEach((k) => delete isian[k])
   tagihanBisaDibayar.value.forEach((t) => {
-    isian[t.id] = { dipilih: false, nominal: t.sisa }
+    isian[t.kunci] = { dipilih: false, nominal: t.sisa }
   })
   catatanBayar.value = ''
   panel.value = 'tagih'
@@ -828,7 +834,7 @@ const mulaiTagih = () => {
 
 const pilihSemua = () => {
   const nilai = !semuaTerpilih.value
-  tagihanBisaDibayar.value.forEach((t) => (isian[t.id].dipilih = nilai))
+  tagihanBisaDibayar.value.forEach((t) => (isian[t.kunci].dipilih = nilai))
 }
 
 const simpanBayar = async () => {
@@ -838,7 +844,10 @@ const simpanBayar = async () => {
   try {
     kwitansi.value = await penagihanService.bayar({
       member_id: detail.value.anggota.id,
-      alokasi: alokasiDipilih.value.map((t) => ({ billing_id: t.id, nominal: Number(isian[t.id].nominal) })),
+      alokasi: alokasiDipilih.value.map((t) => ({
+        ...(t.sumber === 'pinjaman' ? { angsuran_id: t.id } : { billing_id: t.id }),
+        nominal: Number(isian[t.kunci].nominal)
+      })),
       latitude: p?.lat ?? null,
       longitude: p?.lng ?? null,
       akurasi: p?.akurasi ?? null,
