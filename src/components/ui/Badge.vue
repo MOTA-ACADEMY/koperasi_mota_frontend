@@ -24,6 +24,8 @@ const badgeVariants = cva(
           "border-transparent bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
         red:
           "border-transparent bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+        yellow:
+          "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
       },
     },
     defaultVariants: {
@@ -33,7 +35,7 @@ const badgeVariants = cva(
 )
 
 interface BadgeProps {
-  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'green' | 'red'
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'green' | 'red' | 'yellow'
   class?: string
 }
 

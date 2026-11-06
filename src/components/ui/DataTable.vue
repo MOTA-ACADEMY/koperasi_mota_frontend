@@ -150,6 +150,8 @@
                   :variant="action.variant || 'ghost'"
                   :size="action.size || 'sm'"
                   :disabled="action.disabled && action.disabled(item)"
+                  :title="action.label"
+                  :aria-label="action.label"
                   @click="action.handler(item, index)"
                   class="h-8 w-8 p-0"
                 >
@@ -260,6 +262,8 @@ export interface Column {
 export interface Action {
   key: string
   icon: any
+  /** Teks tombol (title & aria-label) — tombol aksi hanya menampilkan ikon. */
+  label?: string
   handler: (item: any, index: number) => void
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
   size?: 'default' | 'sm' | 'lg' | 'icon'

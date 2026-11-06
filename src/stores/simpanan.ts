@@ -61,15 +61,6 @@ export const useSimpananStore = defineStore('simpanan', () => {
     }
   }
 
-  const updateBillingStatus = async (id: number | string, status: 'lunas' | 'belum_lunas'): Promise<void> => {
-    loading.value = true
-    try {
-      await simpananService.updateBillingStatus(id, status)
-    } finally {
-      loading.value = false
-    }
-  }
-
   return {
     billings,
     members,
@@ -77,7 +68,6 @@ export const useSimpananStore = defineStore('simpanan', () => {
     getBillings,
     getActiveMembers,
     createBilling,
-    deleteBilling,
-    updateBillingStatus
+    deleteBilling
   }
 })

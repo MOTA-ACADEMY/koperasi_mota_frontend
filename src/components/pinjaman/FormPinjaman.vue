@@ -138,6 +138,15 @@
           </p>
         </div>
 
+        <div>
+          <span class="label">Dana dicairkan lewat</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button v-for="m in (['tunai', 'transfer'] as const)" :key="m" type="button" class="pilihan" :class="{ 'pilihan-aktif': metodeCair === m }" :aria-pressed="metodeCair === m" @click="metodeCair = m">
+              {{ m === 'tunai' ? 'Tunai (Kas)' : 'Transfer (Bank)' }}
+            </button>
+          </div>
+        </div>
+
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label class="label" for="pj-perlu">Keperluan</label>
@@ -211,7 +220,7 @@
     <template #footer>
       <div class="flex items-center gap-3">
         <p class="min-w-0 flex-1 text-xs text-muted-foreground">
-          Saat disimpan, dana dicatat keluar dari Kas (jurnal Piutang Pinjaman / Kas) dan angsuran mulai tertagih — termasuk oleh kolektor.
+          Saat disimpan, dana dicatat keluar dari {{ metodeCair === 'transfer' ? 'Bank' : 'Kas' }} (jurnal Piutang Pinjaman / {{ metodeCair === 'transfer' ? 'Bank' : 'Kas' }}, langsung diposting) dan angsuran mulai tertagih — termasuk oleh kolektor.
         </p>
         <button type="submit" form="form-pinjaman" class="tombol-utama" :disabled="menyimpan || !anggota || !simulasi || !!pesanSimulasi">
           <Loader2 v-if="menyimpan" class="h-4 w-4 animate-spin" />
@@ -268,6 +277,7 @@ const awal = () => ({
 const f = reactive(awal())
 const anggota = ref<MemberDetail | null>(null)
 const keperluan = ref('')
+const metodeCair = ref<'tunai' | 'transfer'>('tunai')
 const catatan = ref('')
 const galat = reactive<Record<string, string>>({})
 const menyimpan = ref(false)
@@ -406,6 +416,7 @@ watch(
     anggota.value = null
     keperluan.value = ''
     catatan.value = ''
+    metodeCair.value = 'tunai'
     simulasi.value = null
     pesanSimulasi.value = 'Isi jumlah pinjaman untuk melihat jadwal angsuran.'
     Object.keys(galat).forEach((k) => delete galat[k])
@@ -419,7 +430,13 @@ const simpan = async () => {
   }
   menyimpan.value = true
   try {
-    const res = await pinjamanService.buat({ ...input(), member_id: anggota.value.id, keperluan: keperluan.value || null, catatan: catatan.value || null })
+    const res = await pinjamanService.buat({
+      ...input(),
+      member_id: anggota.value.id,
+      metode_cair: metodeCair.value,
+      keperluan: keperluan.value || null,
+      catatan: catatan.value || null
+    })
     if (res.peringatan.length) warning(res.message, { description: res.peringatan[0] })
     else success(res.message)
     emit('tersimpan', res.data)

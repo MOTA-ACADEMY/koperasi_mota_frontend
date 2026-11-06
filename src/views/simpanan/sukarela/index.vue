@@ -124,14 +124,17 @@
                   <div class="font-medium">
                     {{ formatCurrency(item.amount) }}
                   </div>
+                  <div v-if="item.status !== 'lunas' && (item.terbayar > 0 || item.menunggu_setoran > 0)" class="text-xs text-muted-foreground">
+                    Terbayar {{ formatCurrency(item.terbayar) }}<template v-if="item.menunggu_setoran > 0"> · di kolektor {{ formatCurrency(item.menunggu_setoran) }}</template>
+                  </div>
                 </template>
 
                 <!-- Custom cell for Status -->
                 <template #cell-status="{ item }">
                   <Badge 
-                    :variant="item.status === 'lunas' ? 'green' : 'red'"
+                    :variant="item.status === 'lunas' ? 'green' : item.terbayar > 0 || item.menunggu_setoran > 0 ? 'yellow' : 'red'"
                   >
-                    {{ item.status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+                    {{ item.status === 'lunas' ? 'Lunas' : item.terbayar > 0 || item.menunggu_setoran > 0 ? 'Sebagian' : 'Belum Lunas' }}
                   </Badge>
                 </template>
 
@@ -146,6 +149,9 @@
           </CardContent>
         </Card>
       </div>
+
+      <PembayaranSimpanan :tagihan="tagihanDipilih" @close="tagihanDipilih = null" @berubah="loadBillings" />
+
 
       <!-- Input Tagihan Tab -->
       <div v-if="activeTab === 'create'" class="space-y-6">
@@ -268,7 +274,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Plus, Save, Eye, Edit, Trash2, FileText, PlusCircle } from 'lucide-vue-next'
+import { Plus, Save, Trash2, FileText, PlusCircle, Wallet } from 'lucide-vue-next'
+import PembayaranSimpanan from '@/components/simpanan/PembayaranSimpanan.vue'
+import type { SimpananBilling } from '@/services/simpananService'
 import Button from '@/components/ui/Button.vue'
 import Card from '@/components/ui/Card.vue'
 import CardContent from '@/components/ui/CardContent.vue'
@@ -363,22 +371,17 @@ const viewColumns = computed(() => [
 // Table actions for viewing bills
 const viewActions = computed(() => [
   {
-    key: 'view',
-    icon: Eye,
+    key: 'bayar',
+    icon: Wallet,
+    label: 'Pembayaran',
     variant: 'outline' as const,
     size: 'sm' as const,
-    handler: (item: any) => viewDetail(item.id)
-  },
-  {
-    key: 'edit',
-    icon: Edit,
-    variant: 'outline' as const,
-    size: 'sm' as const,
-    handler: (item: any) => editBilling(item.id)
+    handler: (item: any) => (tagihanDipilih.value = item)
   },
   {
     key: 'delete',
     icon: Trash2,
+    label: 'Hapus tagihan',
     variant: 'destructive' as const,
     size: 'sm' as const,
     handler: (item: any) => deleteBilling(item.id)
@@ -537,13 +540,8 @@ const loadMembers = async () => {
   }
 }
 
-const viewDetail = (id: string) => {
-  console.log('View detail:', id)
-}
-
-const editBilling = (id: string) => {
-  console.log('Edit billing:', id)
-}
+/** Tagihan yang panel pembayarannya sedang terbuka. */
+const tagihanDipilih = ref<SimpananBilling | null>(null)
 
 const deleteBilling = async (id: string) => {
   try {
@@ -552,9 +550,9 @@ const deleteBilling = async (id: string) => {
       description: 'Tagihan berhasil dihapus'
     })
     await loadBillings()
-  } catch (err) {
-    error('Error', {
-      description: 'Gagal menghapus tagihan'
+  } catch (err: any) {
+    error('Gagal menghapus tagihan', {
+      description: err?.message || 'Terjadi kesalahan'
     })
   }
 }

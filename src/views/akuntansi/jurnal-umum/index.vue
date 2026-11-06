@@ -35,6 +35,13 @@
               <Badge :variant="item.is_posting ? 'green' : 'secondary'">
                 {{ item.is_posting ? 'Posted' : 'Draft' }}
               </Badge>
+              <span
+                v-if="item.otomatis"
+                class="mt-1 flex items-center gap-1 whitespace-nowrap text-[11px] text-muted-foreground"
+                :title="`Dibuat otomatis dari ${item.sumber_label}. Koreksi lewat modul asalnya.`"
+              >
+                <Lock class="h-3 w-3 shrink-0" /> Otomatis · {{ item.sumber_label }}
+              </span>
             </template>
           </DataTable>
         </div>
@@ -156,7 +163,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Plus, Pencil, Trash2, Send, Undo2 } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Send, Undo2, Lock } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import { jurnalUmumService, type JurnalUmum } from '@/services/akuntansi/jurnalUmumService'
 import { jurnalMemorialService } from '@/services/akuntansi/jurnalMemorialService'
@@ -224,25 +231,26 @@ const formatCurrency = (v: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v || 0)
 const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID')
 
+// Jurnal otomatis (dari pinjaman, simpanan, kolektor, gudang, kasir) terkunci: dikoreksi lewat modul asalnya.
 const rowActions = computed(() => [
   {
-    key: 'posting', icon: Send, variant: 'outline' as const, size: 'sm' as const,
+    key: 'posting', icon: Send, label: 'Posting', variant: 'outline' as const, size: 'sm' as const,
     disabled: (item: JurnalUmum) => item.is_posting,
     handler: (item: JurnalUmum) => posting(item)
   },
   {
-    key: 'unposting', icon: Undo2, variant: 'outline' as const, size: 'sm' as const,
-    disabled: (item: JurnalUmum) => !item.is_posting,
+    key: 'unposting', icon: Undo2, label: 'Batalkan posting', variant: 'outline' as const, size: 'sm' as const,
+    disabled: (item: JurnalUmum) => !item.is_posting || item.otomatis,
     handler: (item: JurnalUmum) => unposting(item)
   },
   {
-    key: 'edit', icon: Pencil, variant: 'outline' as const, size: 'sm' as const,
-    disabled: (item: JurnalUmum) => item.is_posting,
+    key: 'edit', icon: Pencil, label: 'Ubah', variant: 'outline' as const, size: 'sm' as const,
+    disabled: (item: JurnalUmum) => item.is_posting || item.otomatis,
     handler: (item: JurnalUmum) => openEdit(item)
   },
   {
-    key: 'delete', icon: Trash2, variant: 'destructive' as const, size: 'sm' as const,
-    disabled: (item: JurnalUmum) => item.is_posting,
+    key: 'delete', icon: Trash2, label: 'Hapus', variant: 'destructive' as const, size: 'sm' as const,
+    disabled: (item: JurnalUmum) => item.is_posting || item.otomatis,
     handler: (item: JurnalUmum) => openDelete(item)
   }
 ])

@@ -24,8 +24,12 @@ export interface InputPinjaman {
   tanggal_jatuh_tempo: number
 }
 
+export type MetodeUang = 'tunai' | 'transfer'
+
 export interface PinjamanPayload extends InputPinjaman {
   member_id: number
+  /** tunai = keluar dari Kas, transfer = dari Bank */
+  metode_cair?: MetodeUang
   keperluan?: string | null
   catatan?: string | null
 }
@@ -66,6 +70,7 @@ export interface Pinjaman extends InputPinjaman {
   total_bunga: number
   total_tagihan: number
   status: StatusPinjaman
+  metode_cair: MetodeUang
   keperluan: string | null
   catatan: string | null
   jurnal_id: number | null
@@ -98,6 +103,7 @@ export interface PembayaranPinjaman {
   nomor: string
   tanggal: string
   sumber: 'kantor' | 'kolektor'
+  metode: MetodeUang
   total: number
   pokok: number
   bunga: number
@@ -147,12 +153,12 @@ export const pinjamanService = {
   buat(payload: PinjamanPayload): Promise<{ message: string; data: Pinjaman; peringatan: string[] }> {
     return apiService.post('/pinjaman', payload)
   },
-  bayar(id: number, nominal: number, catatan?: string | null): Promise<{
+  bayar(id: number, nominal: number, catatan?: string | null, metode: MetodeUang = 'tunai'): Promise<{
     message: string
     data: { nomor: string; total: number; pokok: number; bunga: number; status_pinjaman: StatusPinjaman; rincian: PembayaranPinjaman['rincian'] }
     peringatan: string[]
   }> {
-    return apiService.post(`/pinjaman/${id}/bayar`, { nominal, catatan })
+    return apiService.post(`/pinjaman/${id}/bayar`, { nominal, catatan, metode })
   },
   batal(id: number, alasan: string): Promise<{ message: string; peringatan: string[] }> {
     return apiService.post(`/pinjaman/${id}/batal`, { alasan })

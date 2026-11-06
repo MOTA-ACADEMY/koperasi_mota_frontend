@@ -18,6 +18,12 @@ export interface JurnalUmum {
   tanggal_transaksi: string
   uraian: string
   kode_bantu: string | null
+  /** Tabel dokumen asal bila jurnal dibuat otomatis oleh modul lain (pinjaman, simpanan, kolektor, gudang, kasir). */
+  sumber: string | null
+  sumber_id: number | null
+  sumber_label: string | null
+  /** Jurnal otomatis terkunci: tidak bisa diubah/dihapus/batal posting di Jurnal Umum. */
+  otomatis: boolean
   is_posting: boolean
   tanggal_posting: string | null
   is_penyesuaian: boolean

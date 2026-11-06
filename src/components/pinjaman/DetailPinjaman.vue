@@ -88,7 +88,7 @@
             <div class="min-w-0">
               <p class="text-sm font-medium text-foreground">{{ b.nomor }} <span class="font-normal text-muted-foreground">· {{ b.sumber === 'kolektor' ? 'via kolektor' : 'di kantor' }}</span></p>
               <p class="text-xs text-muted-foreground">
-                {{ formatWaktu(b.tanggal) }} · angsuran ke-{{ b.rincian.map((r) => r.ke).join(', ') }}<template v-if="b.oleh"> · {{ b.oleh }}</template>
+                {{ formatWaktu(b.tanggal) }} · angsuran ke-{{ b.rincian.map((r) => r.ke).join(', ') }}<template v-if="b.sumber === 'kantor'"> · {{ b.metode === 'transfer' ? 'transfer' : 'tunai' }}</template><template v-if="b.oleh"> · {{ b.oleh }}</template>
               </p>
             </div>
             <div class="shrink-0 text-right">
@@ -130,9 +130,17 @@
           <button type="button" class="chip" @click="nominal = bisaDibayar">Lunasi semua · {{ formatAngka(bisaDibayar) }}</button>
         </div>
       </div>
+      <div>
+        <span class="mb-1 block text-sm font-medium text-foreground">Diterima lewat</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button v-for="m in (['tunai', 'transfer'] as const)" :key="m" type="button" class="pilihan" :class="{ 'pilihan-aktif': metodeBayar === m }" :aria-pressed="metodeBayar === m" @click="metodeBayar = m">
+            {{ m === 'tunai' ? 'Tunai (Kas)' : 'Transfer (Bank)' }}
+          </button>
+        </div>
+      </div>
       <p class="text-xs text-muted-foreground">
         Uang dialokasikan ke angsuran tertua lebih dulu; dalam tiap angsuran, bunga dibayar dulu baru pokok.
-        Jurnal Kas / Piutang Pinjaman / Pendapatan Jasa Pinjaman langsung diposting.
+        Jurnal {{ metodeBayar === 'transfer' ? 'Bank' : 'Kas' }} / Piutang Pinjaman / Pendapatan Jasa Pinjaman langsung diposting.
       </p>
       <div>
         <label class="mb-1 block text-sm font-medium text-foreground" for="bayar-catatan">Catatan</label>
@@ -222,7 +230,7 @@ const info = computed<[string, string][]>(() => {
     ? (p.tingkat_bunga ?? []).map((t) => `bln ${t.dari}–${t.sampai}: ${formatAngka(t.bunga_persen)}%`).join(', ')
     : `${formatAngka(p.bunga_persen ?? 0)}%`
   return [
-    ['Tanggal cair', formatTanggal(p.tanggal_cair)],
+    ['Tanggal cair', `${formatTanggal(p.tanggal_cair)} · ${p.metode_cair === 'transfer' ? 'transfer bank' : 'tunai'}`],
     ['Jangka waktu', `${p.tenor_bulan} bulan`],
     ['Suku bunga', `${bunga} per ${p.satuan_bunga}`],
     ['Jatuh tempo', `tiap tanggal ${p.tanggal_jatuh_tempo}, mulai ${p.mulai_tagih === 'bulan_ini' ? 'bulan cair' : 'bulan berikutnya'}`],
@@ -256,6 +264,7 @@ const statusAngsuran = (a: Angsuran) => {
 const bayarOpen = ref(false)
 const nominal = ref<number | null>(null)
 const catatanBayar = ref('')
+const metodeBayar = ref<'tunai' | 'transfer'>('tunai')
 const galatBayar = ref('')
 
 const sisaBayar = (a: Angsuran) => Math.max(0, a.sisa - a.menunggu_setoran)
@@ -268,6 +277,7 @@ const bisaDibayar = computed(() => (d.value?.angsuran ?? []).filter((a) => a.sta
 const bukaBayar = () => {
   nominal.value = angsuranBerikut.value?.sisa ?? null
   catatanBayar.value = ''
+  metodeBayar.value = 'tunai'
   galatBayar.value = ''
   bayarOpen.value = true
 }
@@ -277,7 +287,7 @@ const bayar = async () => {
   memproses.value = true
   galatBayar.value = ''
   try {
-    const res = await pinjamanService.bayar(d.value.id, nominal.value, catatanBayar.value || null)
+    const res = await pinjamanService.bayar(d.value.id, nominal.value, catatanBayar.value || null, metodeBayar.value)
     const lunas = res.data.status_pinjaman === 'lunas'
     const deskripsi = `Pokok ${formatRupiah(res.data.pokok)} · bunga ${formatRupiah(res.data.bunga)}${lunas ? ' — pinjaman LUNAS' : ''}`
     if (res.peringatan.length) warning(res.message, { description: res.peringatan[0] })
@@ -331,6 +341,14 @@ const batalkan = async () => {
 
   .tombol-utama {
     @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .pilihan {
+    @apply h-10 rounded-lg border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted;
+  }
+
+  .pilihan-aktif {
+    @apply border-green-600 bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-300;
   }
 
   .tombol-garis {

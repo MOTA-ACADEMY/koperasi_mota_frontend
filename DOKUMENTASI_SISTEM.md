@@ -184,6 +184,16 @@ yang dicek router guard.
   lunas + jurnal draft) atau *Tolak* (catatan wajib; kwitansi kembali ke kolektor).
 - Service: `services/penagihanService.ts`; helper warna/format: `lib/penagihan.ts`.
 
+### Integrasi keuangan
+- **Simpanan** (`/simpanan/*`): tombol aksi *Pembayaran* membuka `components/simpanan/PembayaranSimpanan.vue`
+  — terima bayar di kantor (boleh sebagian, tunai/transfer; nominal awal = sisa setelah dikurangi uang yang
+  masih dipegang kolektor), riwayat bayar kantor + kolektor, dan batalkan pembayaran (jurnal pembalik).
+  Tabel menampilkan terbayar/uang di kolektor dan status *Sebagian*. Stub lihat/edit lama dibuang.
+- **Pinjaman**: pilihan *Dana dicairkan lewat* dan *Diterima lewat* — Tunai (Kas) / Transfer (Bank).
+- **Jurnal Umum**: jurnal otomatis diberi penanda 🔒 *Otomatis · {modul asal}*; tombol batal posting/ubah/hapus
+  nonaktif untuk jurnal itu (backend juga menolak).
+- `DataTable` action kini menerima `label` (title & aria-label tombol ikon); `Badge` punya varian `yellow`.
+
 ### Pinjaman (`/pinjaman`)
 - Daftar dengan ringkasan (pinjaman aktif, sisa pokok, peminjam & nominal menunggak) dan tab Aktif /
   Menunggak / Lunas / Dibatalkan.
